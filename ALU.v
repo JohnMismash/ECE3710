@@ -1,5 +1,6 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
+<<<<<<< HEAD
 // Company:
 // Engineers: John Mismash, Andrew Porter, Vanessa Bentley, Zach Phelan
 //
@@ -10,6 +11,18 @@
 // Target Devices:
 // Tool versions:
 // Description:
+=======
+// Company: 
+// Engineer: 
+// 
+// Create Date:    12:54:08 08/30/2011 
+// Design Name: 
+// Module Name:    alu 
+// Project Name: 
+// Target Devices: 
+// Tool versions: 
+// Description: 
+>>>>>>> 524ed474e1fedac8ccc952b36ebd2cf487a29952
 //
 // Dependencies:
 //
@@ -25,29 +38,29 @@ input [4:0] Opcode;
 output reg [15:0] C;
 output reg [4:0] Flags;
 
-parameter ADDU = 5'b0;
+parameter ADDU = 5'b00010;
 parameter ADD = 5'b00000;
-parameter SUB = 5'b;
-parameter CMP = 5'b11;
-parameter ADDI =5'b ;
-parameter ADDUI = 5'b;
-parameter ADDC = 5'b;
-parameter ADDCU = 5'b;
-parameter ADDCUI = 5'b;
-parameter ADDCI = 5'b;
-parameter SUBI = 5'b;
-parameter CMPI = 5'b;
-parameter AND =5
-parameter OR
-parameter XOR
-parameter NOT
-parameter LSH
-parameter LSHI
-parameter RSH
-parameter RSHI
-parameter ALSH
-parameter ARSH
-parameter NOP
+parameter SUB = 5'b01000;
+parameter CMP = 5'b01010;
+parameter ADDI =5'b00001 ;
+parameter ADDUI = 5'b00011;
+parameter ADDC = 5'b00100;
+parameter ADDCU = 5'b00101;
+parameter ADDCUI = 5'b00110;
+parameter ADDCI = 5'b00111;
+parameter SUBI = 5'b01001;
+parameter CMPI = 5'b01011;
+parameter AND =5'b01100;
+parameter OR = 5'b01101;
+parameter XOR = 5'b01110;
+parameter NOT = 5'b01111;
+parameter LSH = 5'b10000;
+parameter LSHI = 5'b10001;
+parameter RSH = 5'b10010;
+parameter RSHI = 5'b10011
+parameter ALSH = 5'b10100;
+parameter ARSH = 5'b10101;
+parameter NOP = 5'b10110;
 
 
 always @(A, B, Opcode)
