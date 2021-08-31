@@ -1,21 +1,21 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date:    12:54:08 08/30/2011 
+// Company:
+// Engineers: John Mismash, Andrew Porter, Vanessa Bentley, Zach Phelan
+//
+// Create Date:    12:54:08 08/30/2011
 // Design Name: First Go -2021
 // Module Name:    alu 
 // Project Name: TEAM 1
-// Target Devices: 
-// Tool versions: 
-// Description: 
+// Target Devices:
+// Tool versions:
+// Description:
 //
-// Dependencies: 
+// Dependencies:
 //
-// Revision: 
+// Revision:
 // Revision 0.01 - File Created
-// Additional Comments: 
+// Additional Comments:
 //
 //////////////////////////////////////////////////////////////////////////////////
 module alu( A, B, C, Opcode, Flags
@@ -57,7 +57,7 @@ begin
 		begin
 		{Flags[3], C} = A + B;
 		// perhaps if ({Flags[3], C} == 5'b00000) ....
-		if (C == 4'b0000) Flags[4] = 1'b1; 
+		if (C == 4'b0000) Flags[4] = 1'b1;
 		else Flags[4] = 1'b0;
 		Flags[2:0] = 3'b000;
 		end
@@ -95,12 +95,12 @@ begin
 		else if (A[3] == 1'b0) Flags[1:0] = 2'b00;
 		else Flags[1:0] = 2'b01;
 		Flags[4:2] = 3'b000;
-		
+
 		// C = ?? if I don;t specify, then I'm in trouble.
 		C = 4'b0000;
 		*/
 		end
-	default: 
+	default:
 		begin
 			C = 4'b0000;
 			Flags = 5'b00000;
