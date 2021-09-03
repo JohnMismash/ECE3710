@@ -100,6 +100,43 @@ begin
 		C = 4'b0000;
 		*/
 		end
+
+  LSH:
+      begin
+      if (B > 0)
+        // Perform shift on A by B
+        A << B; // Fills with zeroes
+
+      else
+        // Perform shift by 1
+        A << 1;
+      end
+
+  LSHI:
+    begin
+    if (B > 0)
+      // Perform shift on A by B
+      A << B; // Fills with zeroes
+
+    else
+      // Perform shift by 1
+      A << 1;
+    end
+
+  RSH:
+    begin
+
+
+
+    end
+
+
+  RSHI:
+      begin
+
+
+
+      end
 	default:
 		begin
 			C = 4'b0000;

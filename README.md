@@ -3,6 +3,5 @@
 # Members:
 * Andrew Porter
 * Jack Mismash
-* Vanessea 
+* Vanessa Bentley
 * Zach Phelan
-
