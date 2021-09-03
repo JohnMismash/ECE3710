@@ -196,18 +196,26 @@ begin
 
   RSH:
     begin
+    if (B > 0)
+      // Perform shift on A by B
+      A << B; // Fills with zeroes
 
-
-
+    else
+      // Perform shift by 1
+      A << 1;
     end
 
-
   RSHI:
-      begin
+    begin
+    if (B > 0)
+      // Perform shift on A by B
+      A << B; // Fills with zeroes
 
+    else
+      // Perform shift by 1
+      A << 1;
 
-
-      end
+    end
 	default:
 		begin
 			C = 4'b0000;
