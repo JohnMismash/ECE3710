@@ -23,7 +23,7 @@ module alu( A, B, C, Opcode, Flags
 input [15:0] A, B;
 input [7:0] Opcode;
 output reg [15:0] C;
-output reg [4:0] Flags; // Flags[4]-ZF Flags[3]-LF,  Flags[2]-FF, Flags[1]-NF, Flags[0]-CF
+output reg [4:0] Flags; // Flags[4]-ZF Flags[3]-CF,  Flags[2]-FF, Flags[1]-LF, Flags[0]-NF
 
 parameter ADD = 8'b00000000;
 parameter ADDI = 8'00001000;
@@ -57,16 +57,17 @@ begin
 		begin
 		{Flags[3], C} = A + B;
 		// perhaps if ({Flags[3], C} == 5'b00000) ....
-		if (C == 'h0) Flags[4] = 1'b1;
-		else Flags[4] = 1'b0;
+		if (C == 'h0) Flags[4] = 1'b1; // Set Z flag if all zeros
+		else Flags[4] = 1'b0; 
 		Flags[2:0] = 3'b000;
 		end
+
 	ADD:
 		begin
 		C = A + B;
 		if (C == 'h0) Flags[4] = 1'b1;
 		else Flags[4] = 1'b0;
-		if( (~A[15] & ~B[15] & C[15]) | (A[15] & B[15] & ~C[15]) ) Flags[2] = 1'b1;
+		if( (~A[15] & ~B[15] & C[15]) | (A[15] & B[15] & ~C[15]) ) Flags[2] = 1'b1; // Checks if overflow occurred. Another way of writing it: if (a > 0 & b > 0 & c < 0 | a < 0 & b < 0 & c > 0), set overflow bit.
 		else Flags[2] = 1'b0;
 		Flags[1:0] = 2'b00; Flags[3] = 1'b0;
 		end
@@ -92,7 +93,7 @@ begin
 
     ADDC:
         begin
-        C = A + Flags[4];
+        C = A + B + Flags[3];
 		if (C == 'h0) Flags[4] = 1'b1;
 		else Flags[4] = 1'b0;
 		if( (~A[15] & ~B[15] & C[15]) | (A[15] & B[15] & ~C[15]) ) Flags[2] = 1'b1;
@@ -102,7 +103,7 @@ begin
 
     ADDCU:
 		begin
-		{Flags[3], C} = A + Flags[4];
+		{Flags[3], C} = A + B + Flags[3];
 		// perhaps if ({Flags[3], C} == 5'b00000) ....
 		if (C == 'h0) Flags[4] = 1'b1;
 		else Flags[4] = 1'b0;
@@ -111,7 +112,7 @@ begin
 
     ADDCUI:
 		begin
-		{Flags[3], C} = A + Flags[4];
+		{Flags[3], C} = A + B + Flags[3];
 		// perhaps if ({Flags[3], C} == 5'b00000) ....
 		if (C == 'h0) Flags[4] = 1'b1;
 		else Flags[4] = 1'b0;
@@ -120,13 +121,12 @@ begin
 
     ADDCI:
 		begin
-		{Flags[3], C} = A + Flags[4];
+		{Flags[3], C} = A + Flags[3];
 		// perhaps if ({Flags[3], C} == 5'b00000) ....
 		if (C == 'h0) Flags[4] = 1'b1;
 		else Flags[4] = 1'b0;
 		Flags[2:0] = 3'b000;
 		end
-
 
 	SUB:
 		begin
