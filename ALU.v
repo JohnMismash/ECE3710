@@ -21,23 +21,23 @@
 module alu( A, B, C, Opcode, Flags
     );
 input [15:0] A, B;
-input [4:0] Opcode;
+input [7:0] Opcode;
 output reg [15:0] C;
 output reg [4:0] Flags;
 
-parameter ADDU = 5'b00010;
-parameter ADD = 5'b00000;
-parameter SUB = 5'b01000;
-parameter CMP = 5'b01010;
-parameter ADDI =5'b00001 ;
+parameter ADD = 8'b00000000;
+parameter ADDI = 8'00001000;
+parameter ADDU = 8'b00010000;
 parameter ADDUI = 5'b00011;
 parameter ADDC = 5'b00100;
 parameter ADDCU = 5'b00101;
 parameter ADDCUI = 5'b00110;
 parameter ADDCI = 5'b00111;
+parameter SUB = 8'b01000;
 parameter SUBI = 5'b01001;
+parameter CMP = 5'b01010;
 parameter CMPI = 5'b01011;
-parameter AND =5'b01100;
+parameter AND = 5'b01100;
 parameter OR = 5'b01101;
 parameter XOR = 5'b01110;
 parameter NOT = 5'b01111;
@@ -96,7 +96,7 @@ begin
 		else Flags[1:0] = 2'b01;
 		Flags[4:2] = 3'b000;
 
-		// C = ?? if I don;t specify, then I'm in trouble.
+		// C = ?? if I don't specify, then I'm in trouble.
 		C = 4'b0000;
 		*/
 		end
