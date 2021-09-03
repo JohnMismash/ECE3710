@@ -1,28 +1,15 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-<<<<<<< HEAD
 // Company:
 // Engineers: John Mismash, Andrew Porter, Vanessa Bentley, Zach Phelan
 //
 // Create Date:    12:54:08 08/30/2011
 // Design Name: First Go -2021
-// Module Name:    alu 
+// Module Name:    alu
 // Project Name: TEAM 1
 // Target Devices:
 // Tool versions:
 // Description:
-=======
-// Company: 
-// Engineer: 
-// 
-// Create Date:    12:54:08 08/30/2011 
-// Design Name: 
-// Module Name:    alu 
-// Project Name: 
-// Target Devices: 
-// Tool versions: 
-// Description: 
->>>>>>> 524ed474e1fedac8ccc952b36ebd2cf487a29952
 //
 // Dependencies:
 //
