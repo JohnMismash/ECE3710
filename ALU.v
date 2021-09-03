@@ -198,22 +198,22 @@ begin
     begin
     if (B > 0)
       // Perform shift on A by B
-      A << B; // Fills with zeroes
+      A >>> B; // Sign extended
 
     else
       // Perform shift by 1
-      A << 1;
+      A >>> 1; // Sign extended
     end
 
   RSHI:
     begin
     if (B > 0)
       // Perform shift on A by B
-      A << B; // Fills with zeroes
+      A >>> B; // Sign extended
 
     else
       // Perform shift by 1
-      A << 1;
+      A >>> 1; // Sign extended
 
     end
 	default:
