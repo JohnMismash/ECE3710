@@ -57,20 +57,77 @@ begin
 		begin
 		{Flags[3], C} = A + B;
 		// perhaps if ({Flags[3], C} == 5'b00000) ....
-		if (C == 4'b0000) Flags[4] = 1'b1;
+		if (C == 'h0) Flags[4] = 1'b1;
 		else Flags[4] = 1'b0;
 		Flags[2:0] = 3'b000;
 		end
 	ADD:
 		begin
 		C = A + B;
-		if (C == 4'b0000) Flags[4] = 1'b1;
+		if (C == 'h0) Flags[4] = 1'b1;
 		else Flags[4] = 1'b0;
-		if( (~A[3] & ~B[3] & C[3]) | (A[3] & B[3] & ~C[3]) ) Flags[2] = 1'b1;
+		if( (~A[15] & ~B[15] & C[15]) | (A[15] & B[15] & ~C[15]) ) Flags[2] = 1'b1;
 		else Flags[2] = 1'b0;
 		Flags[1:0] = 2'b00; Flags[3] = 1'b0;
-
 		end
+
+    ADDI:
+        begin
+		C = A + B;
+		if (C == 4'b0000) Flags[4] = 1'b1;
+		else Flags[4] = 1'b0;
+		if( (~A[15] & ~B[15] & C[15]) | (A[15] & B[15] & ~C[15]) ) Flags[2] = 1'b1;
+		else Flags[2] = 1'b0;
+		Flags[1:0] = 2'b00; Flags[3] = 1'b0;
+		end
+
+    ADDUI:
+		begin
+		{Flags[3], C} = A + B;
+		// perhaps if ({Flags[3], C} == 5'b00000) ....
+		if (C == 'h0) Flags[4] = 1'b1;
+		else Flags[4] = 1'b0;
+		Flags[2:0] = 3'b000;
+		end
+
+    ADDC:
+        begin
+        C = A + Flags[4];
+		if (C == 'h0) Flags[4] = 1'b1;
+		else Flags[4] = 1'b0;
+		if( (~A[15] & ~B[15] & C[15]) | (A[15] & B[15] & ~C[15]) ) Flags[2] = 1'b1;
+		else Flags[2] = 1'b0;
+		Flags[1:0] = 2'b00; Flags[3] = 1'b0;
+		end
+
+    ADDCU:
+		begin
+		{Flags[3], C} = A + Flags[4];
+		// perhaps if ({Flags[3], C} == 5'b00000) ....
+		if (C == 'h0) Flags[4] = 1'b1;
+		else Flags[4] = 1'b0;
+		Flags[2:0] = 3'b000;
+		end
+
+    ADDCUI:
+		begin
+		{Flags[3], C} = A + Flags[4];
+		// perhaps if ({Flags[3], C} == 5'b00000) ....
+		if (C == 'h0) Flags[4] = 1'b1;
+		else Flags[4] = 1'b0;
+		Flags[2:0] = 3'b000;
+		end
+
+    ADDCI:
+		begin
+		{Flags[3], C} = A + Flags[4];
+		// perhaps if ({Flags[3], C} == 5'b00000) ....
+		if (C == 'h0) Flags[4] = 1'b1;
+		else Flags[4] = 1'b0;
+		Flags[2:0] = 3'b000;
+		end
+
+
 	SUB:
 		begin
 		C = A - B;
