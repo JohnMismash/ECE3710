@@ -33,7 +33,7 @@ parameter ADDC = 8'b00100000;
 parameter ADDCU = 8'b00101000;
 parameter ADDCUI = 8'b00110000;
 parameter ADDCI = 8'b00111000;
-parameter SUB = 8'b01000;
+parameter SUB = 8'b01000000;
 parameter SUBI = 8'b01001000;
 parameter CMP = 8'b01010000;
 parameter CMPI = 8'b01011000;
@@ -74,11 +74,25 @@ begin
 	SUB:
 		begin
 		C = A - B;
-		if (C == 4'b0000) Flags[4] = 1'b1;
+		if (C == 16'd0) Flags[4] = 1'b1; //Sets the Z flag
 		else Flags[4] = 1'b0;
-		if( (~A[3] & ~B[3] & C[3]) | (A[3] & B[3] & ~C[3]) ) Flags[2] = 1'b1;
+		if( (~A[15] & ~B[15] & C[15]) | (A[15] & B[15] & ~C[15]) ) Flags[2] = 1'b1; //Sets the F flag
 		else Flags[2] = 1'b0;
-		Flags[1:0] = 2'b00; Flags[3] = 1'b0;
+		
+		Flags[1:0] = 2'b00; Flags[3] = 1'b0; //Ensure Other Flags to 0
+		end
+				
+	SUBI: //Same as SUB
+		begin
+
+		C = A - B;
+		if (C == 16'd0) Flags[4] = 1'b1; //Sets the Z flag
+		else Flags[4] = 1'b0;
+		if( (~A[15] & ~B[15] & C[15]) | (A[15] & B[15] & ~C[15]) ) Flags[2] = 1'b1; //Sets the F flag
+		else Flags[2] = 1'b0;
+		
+		Flags[1:0] = 2'b00; Flags[3] = 1'b0; //Ensure Other Flags to 0
+		
 		end
 	CMP:
 		begin
