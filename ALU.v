@@ -23,7 +23,7 @@ module alu( A, B, C, Opcode, Flags
 input [15:0] A, B;
 input [7:0] Opcode;
 output reg [15:0] C;
-output reg [4:0] Flags;
+output reg [4:0] Flags; // Flags[4]-ZF Flags[3]-LF,  Flags[2]-FF, Flags[1]-NF, Flags[0]-CF
 
 parameter ADD = 8'b00000000;
 parameter ADDI = 8'00001000;
