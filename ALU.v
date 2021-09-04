@@ -58,7 +58,7 @@ begin
 		{Flags[3], C} = A + B;
 		// perhaps if ({Flags[3], C} == 5'b00000) ....
 		if (C == 'h0) Flags[4] = 1'b1; // Set Z flag if all zeros
-		else Flags[4] = 1'b0; 
+		else Flags[4] = 1'b0;
 		Flags[2:0] = 3'b000;
 		end
 
@@ -214,6 +214,39 @@ begin
     else
       // Perform shift by 1
       A >>> 1; // Sign extended
+
+    end
+
+  AND:
+    begin
+    if (A == 1'b1 & B == 1'b1) // If both inputs are true, output is true
+      C = 1'b1;
+    else
+      C = 1'b0; // Else output is false
+    end
+  OR:
+    begin
+    if (A == 1 | B == 1) // If A or B is true, Output is true
+      C = 1'b1;
+    else
+      C = 1'b0; // Else output is false
+    end
+
+  XOR:
+    begin
+    if (A == 1'b0 & B == 1'b1 | A == 1'b1 & B == 1'b0) //If both inputs are true, output is true
+      C = 1'b1;
+    else
+      C = 1'b0;
+    end
+  NOT:
+    begin
+      C = ~A; // Output is opposite of A, either 1 or 0
+
+    end
+  NOP:
+    begin
+
 
     end
 	default:
