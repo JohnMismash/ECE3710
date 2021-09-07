@@ -157,9 +157,9 @@ begin
 		C = 16'd0;
 		if ($signed(A) == $signed(B)) Flags[4:2] = 3'b100;
 		else Flags[4:2] = 3'b000;
-		
+
 		end
-		
+
 	CMPU:
 		begin
 		if ( A < B ) Flags[1:0] = 2'b10;
@@ -168,7 +168,7 @@ begin
 		if (A == B) Flags[4:2] = 3'b100;
 		else Flags[4:2] = 3'b000;
 		end
-		
+
 	AND:
 		begin
 		if (A == 1'b1 & B == 1'b1) // If both inputs are true, output is true
@@ -176,7 +176,7 @@ begin
 		else
 			C = 1'b0; // Else output is false
 		end
-		
+
 	OR:
 		begin
 		if (A == 1 | B == 1) // If A or B is true, Output is true
@@ -192,7 +192,7 @@ begin
 		else
 			C = 1'b0;
 		end
-	 
+
 	NOT:
 		begin
 			C = ~A; // Output is opposite of A, either 1 or 0
@@ -221,7 +221,7 @@ begin
       C = A << 1;
     end
 
-  RSH:
+  ARSH:
     begin
     if (B > 0)
       // Perform shift on A by B
@@ -232,6 +232,29 @@ begin
       C = A >>> 1; // Sign extended
     end
 
+  ALSH:
+    begin
+    if (B > 0)
+      // Perform shift on A by B
+      A <<< B; // Sign extended
+
+    else
+      // Perform shift by 1
+      A <<< 1; // Sign extended
+
+    end
+
+  RSH:
+    begin
+    if (B > 0)
+      // Perform shift on A by B
+      A >> B; // Sign extended
+
+    else
+      // Perform shift by 1
+      A >> 1; // Sign extended
+
+    end
   RSHI:
     begin
     if (B > 0)
@@ -250,7 +273,7 @@ begin
    	//do nothing
 
     end
-	 
+
 	default:
 		begin
 			C = 4'b0000;
