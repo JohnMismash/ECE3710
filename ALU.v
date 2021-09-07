@@ -236,11 +236,11 @@ begin
     begin
     if (B > 0)
       // Perform shift on A by B
-      A <<< B; // Sign extended
+      C = A << B; // Sign extended
 
     else
       // Perform shift by 1
-      A <<< 1; // Sign extended
+      C =A << 1; // Sign extended
 
     end
 
@@ -248,11 +248,11 @@ begin
     begin
     if (B > 0)
       // Perform shift on A by B
-      A >> B; // Sign extended
+      C = A >> B; // Sign extended
 
     else
       // Perform shift by 1
-      A >> 1; // Sign extended
+      C = A >> 1; // logical extended
 
     end
   RSHI:
