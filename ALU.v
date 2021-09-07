@@ -243,6 +243,18 @@ begin
       A <<< 1; // Sign extended
 
     end
+
+  RSH:
+    begin
+    if (B > 0)
+      // Perform shift on A by B
+      A >> B; // Sign extended
+
+    else
+      // Perform shift by 1
+      A >> 1; // Sign extended
+
+    end
   RSHI:
     begin
     if (B > 0)
