@@ -18,14 +18,14 @@
 // Additional Comments: Testing
 //
 //////////////////////////////////////////////////////////////////////////////////
-module alu( A, B, C, Opcode, Flags);
+module ALU( A, B, C, Opcode, Flags);
 input [15:0] A, B;
 input [7:0] Opcode;
 output reg [15:0] C;
 output reg [4:0] Flags; // Flags[4]-ZF Flags[3]-CF,  Flags[2]-FF, Flags[1]-LF, Flags[0]-NF
 
 parameter ADD = 8'b00000000;
-parameter ADDI = 8'00001000;
+parameter ADDI = 8'b00001000;
 parameter ADDU = 8'b00010000;
 parameter ADDUI = 8'b00011000;
 parameter ADDC = 8'b00100000;
@@ -162,7 +162,7 @@ begin
 
 	CMPU:
 		begin
-		if ( A < B ) Flag[1:0] = 2'b10;
+		if ( A < B ) Flags[1:0] = 2'b10;
 		else Flags[1:0] = 2'b00;
 		C = 16'd0;
 		if (A == B) Flags[4:2] = 3'b100;
@@ -203,33 +203,33 @@ begin
       begin
       if (B > 0)
         // Perform shift on A by B
-        A << B; // Fills with zeroes
+        C  = A << B; // Fills with zeroes
 
       else
         // Perform shift by 1
-        A << 1;
+        C = A << 1;
       end
 
   LSHI:
     begin
     if (B > 0)
       // Perform shift on A by B
-      A << B; // Fills with zeroes
+      C = A << B; // Fills with zeroes
 
     else
       // Perform shift by 1
-      A << 1;
+      C = A << 1;
     end
 
   ARSH:
     begin
     if (B > 0)
       // Perform shift on A by B
-      A >>> B; // Sign extended
+      C = A >>> B; // Sign extended
 
     else
       // Perform shift by 1
-      A >>> 1; // Sign extended
+      C = A >>> 1; // Sign extended
     end
 
   ALSH:
@@ -259,11 +259,11 @@ begin
     begin
     if (B > 0)
       // Perform shift on A by B
-      A >>> B; // Sign extended
+      C = A >>> B; // Sign extended
 
     else
       // Perform shift by 1
-      A >>> 1; // Sign extended
+      C = A >>> 1; // Sign extended
 
     end
 
