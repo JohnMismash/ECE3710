@@ -3,7 +3,7 @@
 // Company:
 // Engineers: John Mismash, Andrew Porter, Vanessa Bentley, Zach Phelan
 //
-// Create Date:    12:54:08 08/30/2011
+// Create Date:    12:54:08 08/30/2021
 // Design Name: First Go -2021
 // Module Name:    alu
 // Project Name: TEAM 1
@@ -18,8 +18,7 @@
 // Additional Comments: Testing
 //
 //////////////////////////////////////////////////////////////////////////////////
-module alu( A, B, C, Opcode, Flags
-    );
+module alu( A, B, C, Opcode, Flags);
 input [15:0] A, B;
 input [7:0] Opcode;
 output reg [15:0] C;
