@@ -3,7 +3,7 @@
 // Company:
 // Engineers: John Mismash, Andrew Porter, Vanessa Bentley, Zach Phelan
 //
-// Create Date:    12:54:08 08/30/2011
+// Create Date:    12:54:08 08/30/2021
 // Design Name: First Go -2021
 // Module Name:    alu
 // Project Name: TEAM 1
@@ -18,8 +18,7 @@
 // Additional Comments: Testing
 //
 //////////////////////////////////////////////////////////////////////////////////
-module alu( A, B, C, Opcode, Flags
-    );
+module alu( A, B, C, Opcode, Flags);
 input [15:0] A, B;
 input [7:0] Opcode;
 output reg [15:0] C;
@@ -48,7 +47,7 @@ parameter RSHI = 8'b10011000;
 parameter ALSH = 8'b10100000;
 parameter ARSH = 8'b10101000;
 parameter NOP = 8'b10110000;
-
+parameter CMPU = 8'b11100000;
 
 always @(A, B, Opcode)
 begin
@@ -155,21 +154,19 @@ begin
 		begin
 		if( $signed(A) < $signed(B) ) Flags[1:0] = 2'b11;
 		else Flags[1:0] = 2'b00;
-		C = 4'b0000;
-		Flags[4:2] = 3'b000;
-		// both positive or both negative
-		/*if( A[3] == B[3] )
-		begin
-			if (A < B) Flags[1:0] = 2'b11;
-			else Flags[1:0] = 2'b00;
+		C = 16'd0;
+		if ($signed(A) == $signed(B)) Flags[4:2] = 3'b100;
+		else Flags[4:2] = 3'b000;
+		
 		end
-		else if (A[3] == 1'b0) Flags[1:0] = 2'b00;
-		else Flags[1:0] = 2'b01;
-		Flags[4:2] = 3'b000;
-
-		// C = ?? if I don't specify, then I'm in trouble.
-		C = 4'b0000;
-		*/
+		
+	CMPU:
+		begin
+		if ( A < B ) Flag[1:0] = 2'b10;
+		else Flags[1:0] = 2'b00;
+		C = 16'd0;
+		if (A == B) Flags[4:2] = 3'b100;
+		else Flags[4:2] = 3'b000;
 		end
 		
 	AND:
