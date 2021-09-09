@@ -171,32 +171,26 @@ begin
 
 	AND:
 		begin
-		if (A == 1'b1 & B == 1'b1) // If both inputs are true, output is true
-			C = 1'b1;
-		else
-			C = 1'b0; // Else output is false
+			C = A & B; 
+			Flags = 5'd0;
 		end
 
 	OR:
 		begin
-		if (A == 1 | B == 1) // If A or B is true, Output is true
-			C = 1'b1;
-		else
-			C = 1'b0; // Else output is false
+			C = A | B;
+			Flags = 5'd0;
 		end
 
 	XOR:
 		begin
-		if (A == 1'b0 & B == 1'b1 | A == 1'b1 & B == 1'b0) //If both inputs are true, output is true
-			C = 1'b1;
-		else
-			C = 1'b0;
+		C = A ^ B;
+		Flags = 5'd0;
 		end
 
 	NOT:
 		begin
 			C = ~A; // Output is opposite of A, either 1 or 0
-
+		Flags = 5'd0;
 		end
 
   LSH:
@@ -208,6 +202,7 @@ begin
       else
         // Perform shift by 1
         C = A << 1;
+      Flags = Flags;
       end
 
   LSHI:
@@ -219,6 +214,7 @@ begin
     else
       // Perform shift by 1
       C = A << 1;
+    Flags = Flags;
     end
 
   ARSH:
@@ -230,6 +226,7 @@ begin
     else
       // Perform shift by 1
       C = A >>> 1; // Sign extended
+    Flags = Flags;
     end
 
   ALSH:
@@ -241,7 +238,7 @@ begin
     else
       // Perform shift by 1
       C =A << 1; // Sign extended
-
+	Flags = Flags;
     end
 
   RSH:
@@ -253,7 +250,7 @@ begin
     else
       // Perform shift by 1
       C = A >> 1; // logical extended
-
+Flags = Flags;
     end
   RSHI:
     begin
@@ -264,7 +261,7 @@ begin
     else
       // Perform shift by 1
       C = A >>> 1; // Sign extended
-
+Flags = Flags
     end
 
 
