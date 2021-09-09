@@ -51,8 +51,8 @@ module alutest;
 //signal in the argument list.
 
 		// Initialize Inputs
-		A = 0;
-		B = 0;
+		A = 5;
+		B = -7;
 		Opcode = 8'b00000000;
 
 		// Wait 100 ns for global reset to finish
@@ -66,11 +66,11 @@ module alutest;
 		//$display("A: %b, B: %b, C:%b, Flags[1:0]: %b, time:%d", A, B, C, Flags[1:0], $time);
 ****/
 		//Random simulation
-		for( i = 0; i< 10; i = i+ 1)
+		for( i = 0; i< 32; i = i+ 1)
 		begin
 			#10
-			A = $random % 16;
-			B = $random %16;
+			Opcode = i;
+			//B = 2 + i;
 			$display("A: %0d, B: %0d, C: %0d, Flags[1:0]: %b, time:%0d", A, B, C, Flags[1:0], $time );
 		end
 		$finish(2);
@@ -80,4 +80,3 @@ module alutest;
 	end
       
 endmodule
-
