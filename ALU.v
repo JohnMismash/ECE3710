@@ -25,29 +25,29 @@ output reg [15:0] C;
 output reg [4:0] Flags; // Flags[4]-ZF Flags[3]-CF,  Flags[2]-FF, Flags[1]-LF, Flags[0]-NF
 
 parameter ADD = 8'b00000000;
-parameter ADDI = 8'b00001000;
-parameter ADDU = 8'b00010000;
-parameter ADDUI = 8'b00011000;
-parameter ADDC = 8'b00100000;
-parameter ADDCU = 8'b00101000;
-parameter ADDCUI = 8'b00110000;
-parameter ADDCI = 8'b00111000;
-parameter SUB = 8'b01000000;
-parameter SUBI = 8'b01001000;
-parameter CMP = 8'b01010000;
-parameter CMPI = 8'b01011000;
-parameter AND = 8'b01100000;
-parameter OR = 8'b01101000;
-parameter XOR = 8'b01110000;
-parameter NOT = 8'b01111000;
-parameter LSH = 8'b10000000;
-parameter LSHI = 8'b10001000;
-parameter RSH = 8'b10010000;
-parameter RSHI = 8'b10011000;
-parameter ALSH = 8'b10100000;
-parameter ARSH = 8'b10101000;
-parameter NOP = 8'b10110000;
-parameter CMPU = 8'b11100000;
+parameter ADDI = 8'b00000001;
+parameter ADDU = 8'b00000010;
+parameter ADDUI = 8'b00000011;
+parameter ADDC = 8'b00000100;
+parameter ADDCU = 8'b00000101;
+parameter ADDCUI = 8'b00000110;
+parameter ADDCI = 8'b00000111;
+parameter SUB = 8'b00001000;
+parameter SUBI = 8'b00001001;
+parameter CMP = 8'b00001010;
+parameter CMPI = 8'b00001011;
+parameter CMPU  = 8'b00001100;
+parameter AND = 8'b00001101;
+parameter OR  = 8'b00001110;
+parameter XOR  = 8'b00001111;
+parameter NOT  = 8'b00010000;
+parameter LSH  = 8'b00010001;
+parameter LSHI  = 8'b00010010;
+parameter RSH  = 8'b00010011;
+parameter RSHI  = 8'b00010100;
+parameter ALSH  = 8'b00010101;
+parameter ARSH  = 8'b00010110;
+parameter NOP = 8'b00010111;
 
 always @(A, B, Opcode)
 begin
