@@ -4,21 +4,14 @@
 // Company:
 // Engineers: John Mismash, Andrew Porter, Vanessa Bentley, Zach Phelan
 //
-// Create Date:    12:54:08 08/30/2021
+// Create Date: 12:54:08 08/30/2021
 // Design Name: First Go -2021
-// Module Name:    alu
+// Module Name: alu
 // Project Name: TEAM 1
-// Target Devices:
-// Tool versions:
-// Description:
-//
-// Dependencies:
-//
-// Revision:
-// Revision 0.01 - File Created
 // Additional Comments: Testing
 //
 //////////////////////////////////////////////////////////////////////////////////
+
 module ALU( A, B, C, Opcode, Flags);
 input [15:0] A, B;
 input [7:0] Opcode;
@@ -57,9 +50,11 @@ begin
 	ADDU:
 		begin
 		{Flags[3], C} = A + B;
-		// perhaps if ({Flags[3], C} == 5'b00000) ....
-		if (C == 'h0) Flags[4] = 1'b1; // Set Z flag if all zeros
-		else Flags[4] = 1'b0;
+
+		if (C == 'h0)
+			Flags[4] = 1'b1; // Set Z flag if all zeros
+		else
+			Flags[4] = 1'b0;
 		Flags[2:0] = 3'b000;
 		end
 
@@ -171,10 +166,10 @@ begin
 		else Flags[4:2] = 3'b000;
 		end
 
-	
+
 	AND:
 		begin
-			C = A & B; 
+			C = A & B;
 			Flags = 5'd0;
 		end
 
