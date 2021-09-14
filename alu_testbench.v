@@ -32,25 +32,7 @@ module alutest;
 	// Outputs
 	wire [15:0] C;
 	wire [4:0] Flags;
-
-	integer i;
-	// Instantiate the Unit Under Test (UUT)
-	ALU uut (
-		.A(A), 
-		.B(B), 
-		.C(C), 
-		.Opcode(Opcode), 
-		.Flags(Flags)
-	);
-
-	initial begin
-		
-		
-//			$monitor("A: %0d, B: %0d, C: %0d, Flags[1:0]:
-//%b, time:%0d", A, B, C, Flags[1:0], $time );
-//Instead of the $display stmt in the loop, you could use just this
-//monitor statement which is executed everytime there is an event on any
-//signal in the argument list.
+	//signal in the argument list.
 parameter ADD    = 8'b00000000;
 parameter ADDI   = 8'b00000001;
 parameter ADDU   = 8'b00000010;
@@ -75,6 +57,25 @@ parameter RSHI   = 8'b00010100;
 parameter ALSH   = 8'b00010101;
 parameter ARSH   = 8'b00010110;
 parameter NOP    = 8'b00010111;
+
+	integer i;
+	// Instantiate the Unit Under Test (UUT)
+	ALU uut (
+		.A(A), 
+		.B(B), 
+		.C(C), 
+		.Opcode(Opcode), 
+		.Flags(Flags)
+	);
+
+	initial begin
+		
+		
+//			$monitor("A: %0d, B: %0d, C: %0d, Flags[1:0]:
+//%b, time:%0d", A, B, C, Flags[1:0], $time );
+//Instead of the $display stmt in the loop, you could use just this
+//monitor statement which is executed everytime there is an event on any
+
 		
 		// Initialize Inputs
 		A = 5;
@@ -103,19 +104,19 @@ parameter NOP    = 8'b00010111;
 			if (C != A + B)
 				$display("Error: %0d + %0d != %0d", A, B, C);
 			
-			Opcode = SUB // Subtract
+			Opcode = SUB; // Subtract
 			#10
 			if (C != A - B)
 				$display("Error: %0d - %0d != %0d", A, B, C);
 			
 			Opcode = OR; // Subtract
 			#10
-			if (C != A  | B)
-				$display("Error: %0d | %0d != %0d", A, B, C);
+			if (C != (A  | B))
+				$display("Error: %0b | %0b != %0b", A, B, C);
 			
 			Opcode = AND; // Subtract
 			#10
-			if (C != A & B)
+			if (C != (A & B))
 				$display("Error: %0d & %0d != %0d", A, B, C);
 			//B = 2 + i;
 			//$display("A: %0d, B: %0d, C: %0d, Flags[1:0]: %b, time:%0d", A, B, C, Flags[1:0], $time );
@@ -125,5 +126,4 @@ parameter NOP    = 8'b00010111;
 		// Add stimulus here
 
 	end
-      
-endmodule
+      endmodule 
