@@ -69,11 +69,16 @@ module alutest;
 		for( i = 0; i< 32; i = i+ 1)
 		begin
 			#10
-			Opcode = i;
+			Opcode = 0;
+			A = i;
+			B = 3*i;
+			
+			if (C != A + B)
+				$display("Error: %0d + %0d != %0d, A, B, C");
 			//B = 2 + i;
-			$display("A: %0d, B: %0d, C: %0d, Flags[1:0]: %b, time:%0d", A, B, C, Flags[1:0], $time );
+			//$display("A: %0d, B: %0d, C: %0d, Flags[1:0]: %b, time:%0d", A, B, C, Flags[1:0], $time );
 		end
-		$finish(2);
+		//$finish(2);
 		
 		// Add stimulus here
 
