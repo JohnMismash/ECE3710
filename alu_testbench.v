@@ -1,25 +1,25 @@
 `timescale 1ns / 1ps
 
 ////////////////////////////////////////////////////////////////////////////////
-// Company: 
+// Company:
 // Engineer:
 //
 // Create Date:   14:25:01 08/30/2011
 // Design Name:   alu
 // Module Name:   C:/Documents and Settings/Administrator/ALU/alutest.v
 // Project Name:  ALU
-// Target Device:  
-// Tool versions:  
-// Description: 
+// Target Device:
+// Tool versions:
+// Description:
 //
 // Verilog Test Fixture created by ISE for module: alu
 //
 // Dependencies:
-// 
+//
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////
 
 module alutest;
@@ -36,10 +36,10 @@ module alutest;
 	integer i;
 	// Instantiate the Unit Under Test (UUT)
 	ALU uut (
-		.A(A), 
-		.B(B), 
-		.C(C), 
-		.Opcode(Opcode), 
+		.A(A),
+		.B(B),
+		.C(C),
+		.Opcode(Opcode),
 		.Flags(Flags)
 	);
 
@@ -72,16 +72,16 @@ module alutest;
 			Opcode = 0;
 			A = i;
 			B = 3*i;
-			
+
 			if (C != A + B)
-				$display("Error: %0d + %0d != %0d, A, B, C");
+				$display("Error: %0d + %0d != %0d", A, B, C);
 			//B = 2 + i;
 			//$display("A: %0d, B: %0d, C: %0d, Flags[1:0]: %b, time:%0d", A, B, C, Flags[1:0], $time );
 		end
 		//$finish(2);
-		
+
 		// Add stimulus here
 
 	end
-      
+
 endmodule
