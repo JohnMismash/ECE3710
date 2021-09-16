@@ -1,5 +1,4 @@
-
-	`timescale 1ns / 1ps
+`timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company:
 // Engineers: John Mismash, Andrew Porter, Vanessa Bentley, Zach Phelan
