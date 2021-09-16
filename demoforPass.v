@@ -184,10 +184,10 @@ begin
 		else Flags[4:2] = 3'b000;
 		end
 
-	
+
 	AND:
 		begin
-			C = A & B; 
+			C = A & B;
 			Flags = 5'd0;
 		end
 
