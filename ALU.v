@@ -259,7 +259,7 @@ Flags = Flags;
     else
       // Perform shift by 1
       C = A >>> 1; // Sign extended
-Flags = Flags
+		Flags = Flags;
     end
 
   NOP:

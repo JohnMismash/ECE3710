@@ -27,7 +27,7 @@ output wire [4:0] Flag;
 parameter inA = 16'hA310; //-23792
 parameter inB = 16'h7141; //28993
 
-demo demoALU(inA, inB, Cout, Flag);
+demo demoALU(inA, inB, Cout, opcode, Flag);
 
 
 endmodule
@@ -184,10 +184,10 @@ begin
 		else Flags[4:2] = 3'b000;
 		end
 
-	
+
 	AND:
 		begin
-			C = A & B; 
+			C = A & B;
 			Flags = 5'd0;
 		end
 
