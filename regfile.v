@@ -11,22 +11,89 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-module RegFile(Clocks, RegEnable, reset);
-	input [15:0] RegEnable;
+module RegFile(Clocks, reset, out1, out2);
+	wire [15:0] RegEnable; //This was an input, but changed to wire for FSM
 	input Clocks, reset;
 	
 	//Internal Wires
 	wire [15:0] Bus, alu_out, r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, outA, outB, BInput;
 	wire reset;
 	wire [4:0] flagswire;
+	wire [7:0] opcode;
+	output wire [6:0] out1, out2;
 	
+	//Finite State Machine
+	myFSMBaby bby(Clocks, reset, RegEnable, opcode); //This is just for a testbench type control
 	
 	FlagReg flags (Clocks, flagswire, flagswire);
 	alu_mux alumux(outB, 4'b0001, 8'b00000011, BInput);
 	reg_mux regA (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, 4'b0110,outA);
-	reg_mux regB (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, 4'b0110,outB);
-	ALU alu(outA, BInput, Bus, flags);
+	reg_mux regB (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, 4'b0111,outB);
+	ALU alu(outA, BInput, Bus, opcode, flags);
 	RegBank reg_bank(Bus,r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, RegEnable, Clocks, reset);
+	
+	//Output Display
+	hexTo7Seg firstdigit (outB[3:0],out1);
+	hexTo7Seg seconddigit (outB[7:4],out2);
+	
+endmodule
+
+//Stuff needs to be altered.
+module myFSMBaby(clock, Reset, regControl, AluOp);
+
+	input clock, Reset;
+	output reg [15:0] regControl;
+	output reg [7:0] AluOp;
+
+	parameter S0=4'd0, S1=4'd1, S2=4'd2, S3=4'd3, S4=4'd4, S5=4'd5, S6=4'd6, S7=4'd7, S8=4'd8, S9=4'd9;
+					 
+	reg [3:0] states, S;	//PS - present state, NS
+	
+	initial states = 0;
+	//Determines next state
+	 always @ (posedge clock or negedge Reset) begin
+			  if (!Reset)
+					S <= S0;
+			  else
+					S <= states;
+	end
+
+
+	//Present State becomes next state
+	always@(S)begin
+		case(S)
+						S0: states=S1;
+						S1: states=S2;
+						S2: states=S3;
+						S3: states=S4;
+						S4: states=S5;
+						S5: states=S6;
+						S6: states=S7;
+						S7: states=S8;
+						S8: states=S9;
+						S9: states=S9;
+						default: states = 4'd15;
+					endcase
+	end
+
+	//Output relies only on current state
+	always@(states)begin
+	case (states)
+		S0 : begin regControl = 16'b0010; AluOp = 2'b00; end //Reset every register and buffer close
+		S1 : begin regControl = 3'b001; AluOp = 2'b00; end //open buffer for data and load R1
+		S2 : begin regControl = 3'b010; AluOp = 2'b00; end //open up R2 for loadimmediate
+		S3 : begin regControl = 3'b100; AluOp = 2'b00; end //Add numbers and store in R3
+		S4 : begin regControl = 3'b010; AluOp = 2'b00; end //Transfer data to R2
+		S5 : begin  regControl = 3'b100; AluOp = 2'b01; end //Bitwise OR R1+R2
+		S6 : begin regControl = 3'b101; AluOp = 2'b01; end //Move Output to R1
+		S7 : begin regControl = 3'b100; AluOp = 2'b11; end //Bitwise Complement
+		S8 : begin regControl = 3'b101; AluOp = 2'b11; end //Move R3 to R1
+		S9 : begin  regControl = 3'b100; AluOp = 2'b10; end //XOR R1 and R2
+		default : begin  regControl = 3'b010; AluOp = 2'b00; end //Shouldn't happen
+		endcase
+	end
+
+
 endmodule
 
 module FlagReg (Clock, flag_reg_in, flag_reg_out);
@@ -411,3 +478,43 @@ begin
 end
 
 endmodule
+
+module hexTo7Seg(input [3:0]x, output reg [6:0]z);
+always @*
+case(x)
+	4'b0000 :			//Hexadecimal 0
+	z = ~7'b0111111;
+   4'b0001 :			//Hexadecimal 1
+	z = ~7'b0000110;
+   4'b0010 :			//Hexadecimal 2
+	z = ~7'b1011011;
+   4'b0011 : 			//Hexadecimal 3
+	z = ~7'b1001111;
+   4'b0100 : 			//Hexadecimal 4
+	z = ~7'b1100110;
+   4'b0101 : 			//Hexadecimal 5
+	z = ~7'b1101101;
+   4'b0110 : 			//Hexadecimal 6
+	z = ~7'b1111101;
+   4'b0111 :			//Hexadecimal 7
+	z = ~7'b0000111;
+   4'b1000 : 			//Hexadecimal 8
+	z = ~7'b1111111;
+   4'b1001 : 			//Hexadecimal 9
+	z = ~7'b1100111;
+	4'b1010 : 			//Hexadecimal A
+	z = ~7'b1110111;
+	4'b1011 : 			//Hexadecimal B
+	z = ~7'b1111100;
+	4'b1100 : 			//Hexadecimal C
+	z = ~7'b1011000;
+	4'b1101 : 			//Hexadecimal D
+	z = ~7'b1011110;
+	4'b1110 : 			//Hexadecimal E
+	z = ~7'b1111001;
+	4'b1111 : 			//Hexadecimal F	
+	z = ~7'b1110001; 
+   default :
+	z = ~7'b0000000;
+endcase
+endmodule 
