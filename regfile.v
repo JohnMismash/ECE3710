@@ -29,7 +29,7 @@ module RegFile(Clocks, reset, out1, out2);
 	alu_mux alumux(outB, 4'b0001, 8'b00000011, BInput);
 	reg_mux regA (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, 4'b0110,outA);
 	reg_mux regB (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, 4'b0111,outB);
-	ALU alu(outA, BInput, Bus, opcode, flags);
+	ALU alu(outA, BInput, Bus, opcode, flagswire);
 	RegBank reg_bank(Bus,r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, RegEnable, Clocks, reset);
 	
 	//Output Display
