@@ -11,21 +11,22 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-module RegFile(Clocks, RegEnable);
+module RegFile(Clocks, RegEnable, reset);
 	input [15:0] RegEnable;
-	input Clocks;
+	input Clocks, reset;
 	
 	//Internal Wires
-	wire [15:0] Bus, alu_out, r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
+	wire [15:0] Bus, alu_out, r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, outA, outB, BInput;
 	wire reset;
+	wire [4:0] flagswire;
 	
 	
-	FlagReg flags (Clocks,
-	alu_mux ();
-	reg_mux regA ();
-	reg_mux regB ();
-	ALU alu();
-	RegBank reg_bank(Bus,r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, RegEnable, );
+	FlagReg flags (Clocks, flagswire, flagswire);
+	alu_mux alumux(outB, 4'b0001, 8'b00000011, BInput);
+	reg_mux regA (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, 4'b0110,outA);
+	reg_mux regB (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, 4'b0110,outB);
+	ALU alu(outA, BInput, Bus, flags);
+	RegBank reg_bank(Bus,r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, RegEnable, Clocks, reset);
 endmodule
 
 module FlagReg (Clock, flag_reg_in, flag_reg_out);
@@ -34,7 +35,7 @@ module FlagReg (Clock, flag_reg_in, flag_reg_out);
 	output reg [4:0] flag_reg_out;
 	
 	always @(posedge Clock) begin
-		if (enable)
+		//if (enable)
 			flag_reg_out = flag_reg_in;
 	end
 	
@@ -64,22 +65,22 @@ module reg_mux(r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, 
 	
 	always @(s) begin
 		case(s)
-			  4'b0000: assign out = r0; 
-			  4'b0001: assign out = r1;
-			  4'b0010: assign out = r2;
-			  4'b0011: assign out = r3;
-			  4'b0100: assign out = r4;
-			  4'b0101: assign out = r5;
-			  4'b0110: assign out = r6;
-			  4'b0111: assign out = r7;
-			  4'b1000: assign out = r8;
-			  4'b1001: assign out = r9;
-			  4'b1010: assign out = r10;
-			  4'b1011: assign out = r11;
-			  4'b1100: assign out = r12;
-			  4'b1101: assign out = r13;
-			  4'b1110: assign out = r14;
-			  4'b1111: assign out = r15;
+			  4'b0000:  out <= r0; 
+			  4'b0001:  out <= r1;
+			  4'b0010:  out <= r2;
+			  4'b0011:  out <= r3;
+			  4'b0100:  out <= r4;
+			  4'b0101:  out <= r5;
+			  4'b0110:  out <= r6;
+			  4'b0111:  out <= r7;
+			  4'b1000:  out <= r8;
+			  4'b1001:  out <= r9;
+			  4'b1010:  out <= r10;
+			  4'b1011:  out <= r11;
+			  4'b1100:  out <= r12;
+			  4'b1101:  out <= r13;
+			  4'b1110:  out <= r14;
+			  4'b1111:  out <= r15;
 			  endcase
 	end
 	
