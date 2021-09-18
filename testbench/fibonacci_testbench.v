@@ -22,25 +22,44 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-module alutest;
+module fibonacci_test;
 
 	// Inputs
-	reg [15:0] A;
-	reg [15:0] B;
-	reg [7:0] Opcode;
+	reg Clocks, reset;
+	reg [15:0] RegEnable;
 
 	// Outputs
-	wire [15:0] C;
-	wire [4:0] Flags;
+	reg [15:0] Bus, alu_out, r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, outA, outB, BInput;
+	wire [4:0] flagswire;
 
 	integer i;
 	// Instantiate the Unit Under Test (UUT)
 	ALU uut (
-		.A(A),
-		.B(B),
-		.C(C),
-		.Opcode(Opcode),
-		.Flags(Flags)
+		.Clocks(Clocks),
+		.RegEnable(RegEnable),
+		.reset(reset),
+		.Bus(Bus),
+		.alu_out(alu_out)
+		.r0(r0),
+		.r1(r1),
+		.r2(r2),
+		.r3(r3),
+		.r4(r4),
+		.r5(r5),
+		.r6(r6),
+		.r7(r7),
+		.r8(r8),
+		.r9(r9),
+		.r10(r10),
+		.r11(r11),
+		.r12(r12),
+		.r13(r13),
+		.r14(r14),
+		.r15(r15),
+		.outA(outA),
+		.outB(outB),
+		.BInput(BInput),
+		.flagswire(flagswire)
 	);
 
 	initial begin
@@ -78,9 +97,7 @@ module alutest;
 			//B = 2 + i;
 			//$display("A: %0d, B: %0d, C: %0d, Flags[1:0]: %b, time:%0d", A, B, C, Flags[1:0], $time );
 		end
-		//$finish(2);
 
-		// Add stimulus here
 
 	end
 
