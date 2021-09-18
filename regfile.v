@@ -11,10 +11,84 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-module Register(D_in, wEnable, reset, clk, r
-    );
+module RegFile(Clocks, RegEnable);
+	input [15:0] RegEnable;
+	input Clocks;
+	
+	//Internal Wires
+	wire [15:0] Bus, alu_out, r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
+	wire reset;
+	
+	
+	FlagReg flags (Clocks,
+	alu_mux ();
+	reg_mux regA ();
+	reg_mux regB ();
+	ALU alu();
+	RegBank reg_bank(Bus,r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, RegEnable, );
+endmodule
+
+module FlagReg (Clock, flag_reg_in, flag_reg_out);
+	input Clock;//, enable;
+	input [4:0] flag_reg_in;
+	output reg [4:0] flag_reg_out;
+	
+	always @(posedge Clock) begin
+		if (enable)
+			flag_reg_out = flag_reg_in;
+	end
+	
+endmodule
+
+module alu_mux(reg_val, imm_val, op_control, out);
+	input [15:0] reg_val;
+	input [3:0] imm_val;
+	input [7:0] op_control;
+	output reg [15:0] out;
+	
+	always @(*)begin//If op_control is equal to any immediate instructions
+	if (op_control == 8'b00000001 || op_control == 8'b00000011 || op_control == 8'b00000110 || op_control == 8'b00000111|| op_control == 8'b00001001 || op_control == 8'b00010010 || op_control ==  8'b00010100) begin
+			out = $signed(imm_val); end
+			
+	else begin
+		out = reg_val; end
+	end
+		
+endmodule
+
+
+module reg_mux(r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, s, out);
+	input [15:0] r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15; 
+	input [3:0] s;
+	output reg [15:0] out;
+	
+	always @(s) begin
+		case(s)
+			  4'b0000: assign out = r0; 
+			  4'b0001: assign out = r1;
+			  4'b0010: assign out = r2;
+			  4'b0011: assign out = r3;
+			  4'b0100: assign out = r4;
+			  4'b0101: assign out = r5;
+			  4'b0110: assign out = r6;
+			  4'b0111: assign out = r7;
+			  4'b1000: assign out = r8;
+			  4'b1001: assign out = r9;
+			  4'b1010: assign out = r10;
+			  4'b1011: assign out = r11;
+			  4'b1100: assign out = r12;
+			  4'b1101: assign out = r13;
+			  4'b1110: assign out = r14;
+			  4'b1111: assign out = r15;
+			  endcase
+	end
+	
+endmodule
+
+
+module Register(D_in, wEnable, reset, clk, r);
 	input [15:0] D_in;
-	 input clk, wEnable, reset;
+	input clk, wEnable, reset;
 	output reg [15:0] r;
 	 
  always @( posedge clk )
@@ -199,16 +273,14 @@ begin
 
 	SUBI: //Same as SUB
 		begin
-
 		C = A - B;
 		if (C == 16'd0) Flags[4] = 1'b1; //Sets the Z flag
 		else Flags[4] = 1'b0;
 		if( (~A[15] & ~B[15] & C[15]) | (A[15] & B[15] & ~C[15]) ) Flags[2] = 1'b1; //Sets the F flag
 		else Flags[2] = 1'b0;
-
 		Flags[1:0] = 2'b00; Flags[3] = 1'b0; //Ensure Other Flags to 0
-
 		end
+		
 	CMP:
 		begin
 		if( $signed(A) < $signed(B) ) Flags[1:0] = 2'b11;
@@ -216,7 +288,6 @@ begin
 		C = 16'd0;
 		if ($signed(A) == $signed(B)) Flags[4:2] = 3'b100;
 		else Flags[4:2] = 3'b000;
-
 		end
 
 	CMPU:
@@ -310,7 +381,7 @@ begin
     else
       // Perform shift by 1
       C = A >> 1; // logical extended
-Flags = Flags;
+	Flags = Flags;
     end
   RSHI:
     begin
@@ -321,7 +392,7 @@ Flags = Flags;
     else
       // Perform shift by 1
       C = A >>> 1; // Sign extended
-Flags = Flags
+	Flags = Flags;
     end
 
   NOP:
