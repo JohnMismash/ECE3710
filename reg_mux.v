@@ -20,5 +20,6 @@ module reg_mux(r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, 
         4'b1101: assign out = r13;
         4'b1110: assign out = r14;
         4'b1111: assign out = r15;
+	endcase
 	
-endmodule
+endmodule 

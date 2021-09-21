@@ -26,25 +26,23 @@ module fibonacci_test;
 
 	// Inputs
 	reg [15:0] RegEnable; //This was an input, but changed to wire for FSM
-	reg [3:0] reg_s1, reg_s2;
+	reg [3:0] reg_select;
 	reg [3:0] imm_val;
 	reg [7:0] opcode;
 	reg Clocks, reset;
 	
 	// Outputs
-	wire [15:0] r15;		
-	integer i;
+	wire [15:0] r15;
 
 	// Instantiate the Unit Under Test (UUT)
-	regfile_tb_version uut (
+	RegFile uut (
 		.Clocks(Clocks),
 		.reset(reset),
 		.RegEnable(RegEnable),
-		.reg_s1(reg_s1),
-		.reg_s2(reg_s2),
+		.reg_select(reg_select),
 		.imm_val(imm_val),
 		.opcode(opcode),
-		.r15(r15)
+		.r15(r15),
 	);
 
 	initial begin
@@ -55,63 +53,44 @@ module fibonacci_test;
 //signal in the argument list.
 
 		// Initialize Inputs
-		reset = 1;
-		RegEnable = 0;
-		reg_s1 = 5; // Avoid adding with R0 later. 
-		reg_s2 = 0;
-		imm_val = 0;
-		opcode = 0;
-		RegEnable = 0; // Select R0 to be written to
-		
-		// Instruction 1 - Load 1 into R15
-		#20
 		Clocks = 0;
 		reset = 0;
-		imm_val = 1;
-		RegEnable[0] = 1; // Select R0 to be written to
-		RegEnable[15] = 1;
-		opcode[0] = 1; // Set op to ADDI
-		//reg_select = 4'b0000; // Select R0 to be read from
-		#20;
-		Clocks = 1; // Load 1 into R0
-
-		#20;
-		$display("R0 = %0d", r15);
-		Clocks = 0;
-		RegEnable = 'd0; // Reset RegEnable
-		RegEnable[1] = 1; // Select R1 to be written to
-		RegEnable[15] = 1;
-		imm_val = 1;
-		opcode[0] = 1; // Set op to ADDI
-				
-		#20
-		Clocks = 1; // Load 1 into R1
+		RegEnable = 0;
+		reg_select = 0;
+		imm_val = 0;
+		opcode = 0;
 		
-		#20
-		$display("R1 = %0d", r15);
-		Clocks = 0;
-
-		opcode = 'd0; // Set to ADD op
-		for (i = 2; i < 16; i = i + 1) begin
-			Clocks = 0;
-			RegEnable = 'd0; // Reset reg to write to
-			RegEnable[i] = 1; // Enable reg i to write to
-			RegEnable[15] = 1; // Write to R15 to check values.
-			reg_s1 = i-2; // Select reg A
-			reg_s2 = i-1; // Select reg B
-			
-			#20;
-			
-			Clocks = 1;
-			
-			#20;
-			$display("R%0d = %0d", i, r15); // Should be 987 at R15
-		end
-		
-		//$display("R15 = %0d", r15); // Should be 987
-		Clocks = 0;
+		// Instruction 1 - Load 1 into R15
+		imm_val = 1;
+		RegEnable[15] = 1;
+		opcode[0] = 1;
+		reg_select = 4'b1111;
 		#20;
-	
+
+		// Wait 100 ns for global reset to finish
+/*****
+		// One vector-by-vector case simulation
+		#10;
+	        Opcode = 2'b11;
+		A = 4'b0010; B = 4'b0011;
+		#10
+		A = 4'b1111; B = 4'b 1110;
+		//$display("A: %b, B: %b, C:%b, Flags[1:0]: %b, time:%d", A, B, C, Flags[1:0], $time);
+****/
+		//Random simulation
+//		for( i = 0; i< 32; i = i+ 1)
+//		begin
+//			#10
+//			Opcode = 0;
+//			A = i;
+//			B = 3*i;
+//
+//			if (C != A + B)
+//				$display("Error: %0d + %0d != %0d", A, B, C);
+			//B = 2 + i;
+			//$display("A: %0d, B: %0d, C: %0d, Flags[1:0]: %b, time:%0d", A, B, C, Flags[1:0], $time );
+//		end
+
 
 	end
 

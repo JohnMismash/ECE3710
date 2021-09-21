@@ -11,43 +11,28 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-module regfile_tb_version(Clocks, reset, RegEnable, reg_s1, reg_s2, imm_val, opcode, r15);
-	input wire [15:0] RegEnable; //This was an input, but changed to wire for FSM
-	input [3:0] reg_s1, reg_s2;
-	input [3:0] imm_val;
-	input [7:0] opcode;
+module RegFile(Clocks, RegEnable, reset);
+	input [15:0] RegEnable;
 	input Clocks, reset;
 	
 	//Internal Wires
-	wire [15:0] Bus, alu_out, r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, outA, outB, BInput;
-	output wire [15:0] r15;
-	wire [4:0] flagswire;
-	wire [7:0] opcode;
-	wire [6:0] out1, out2;
+	output reg [15:0] Bus, alu_out, r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, outA, outB, BInput;
+	output wire reset;
+	output wire [4:0] flagswire;
 	
 	
-	//Finite State Machine
-	//myFSMBaby bby(Clocks, reset, RegEnable, opcode); //This is just for a testbench type control
-	
-	//FlagReg flags (Clocks, flagswire, flagswire);
-	reg_mux regA (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, reg_s1, outA);
-	reg_mux regB (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, reg_s2, outB);
-	alu_mux alumux(outB, imm_val, opcode, BInput);
-	
-	ALU alu(outA, BInput, Bus, opcode, flagswire);
+	FlagReg flags (Clocks, flagswire, flagswire);
+	alu_mux alumux(outB, 4'b0001, 8'b00000011, BInput);
+	reg_mux regA (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, 4'b0110,outA);
+	reg_mux regB (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, 4'b0110,outB);
+	ALU alu(outA, BInput, Bus, flags);
 	RegBank reg_bank(Bus,r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, RegEnable, Clocks, reset);
-	
-	//Output Display
-	//hexTo7Seg firstdigit (outB[3:0],out1);
-	//hexTo7Seg seconddigit (outB[7:4],out2);
-	
 endmodule
-
 
 module FlagReg (Clock, flag_reg_in, flag_reg_out);
 	input Clock;//, enable;
 	input [4:0] flag_reg_in;
-	output reg [4:0] flag_reg_out = 0;
+	output reg [4:0] flag_reg_out;
 	
 	always @(posedge Clock) begin
 		//if (enable)
@@ -60,10 +45,9 @@ module alu_mux(reg_val, imm_val, op_control, out);
 	input [15:0] reg_val;
 	input [3:0] imm_val;
 	input [7:0] op_control;
-	output reg [15:0] out = 0;
+	output reg [15:0] out;
 	
 	always @(*)begin//If op_control is equal to any immediate instructions
-	out = 0;
 	if (op_control == 8'b00000001 || op_control == 8'b00000011 || op_control == 8'b00000110 || op_control == 8'b00000111|| op_control == 8'b00001001 || op_control == 8'b00010010 || op_control ==  8'b00010100) begin
 			out = $signed(imm_val); end
 			
@@ -77,27 +61,26 @@ endmodule
 module reg_mux(r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, s, out);
 	input [15:0] r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15; 
 	input [3:0] s;
-	output reg [15:0] out = 0;
+	output reg [15:0] out;
 	
-	always @(*) begin
-		out = 0;
+	always @(s) begin
 		case(s)
-			  4'b0000:  out = r0; 
-			  4'b0001:  out = r1;
-			  4'b0010:  out = r2;
-			  4'b0011:  out = r3;
-			  4'b0100:  out = r4;
-			  4'b0101:  out = r5;
-			  4'b0110:  out = r6;
-			  4'b0111:  out = r7;
-			  4'b1000:  out = r8;
-			  4'b1001:  out = r9;
-			  4'b1010:  out = r10;
-			  4'b1011:  out = r11;
-			  4'b1100:  out = r12;
-			  4'b1101:  out = r13;
-			  4'b1110:  out = r14;
-			  4'b1111:  out = r15;
+			  4'b0000:  out <= r0; 
+			  4'b0001:  out <= r1;
+			  4'b0010:  out <= r2;
+			  4'b0011:  out <= r3;
+			  4'b0100:  out <= r4;
+			  4'b0101:  out <= r5;
+			  4'b0110:  out <= r6;
+			  4'b0111:  out <= r7;
+			  4'b1000:  out <= r8;
+			  4'b1001:  out <= r9;
+			  4'b1010:  out <= r10;
+			  4'b1011:  out <= r11;
+			  4'b1100:  out <= r12;
+			  4'b1101:  out <= r13;
+			  4'b1110:  out <= r14;
+			  4'b1111:  out <= r15;
 			  endcase
 	end
 	
@@ -107,7 +90,7 @@ endmodule
 module Register(D_in, wEnable, reset, clk, r);
 	input [15:0] D_in;
 	input clk, wEnable, reset;
-	output reg [15:0] r = 0;
+	output reg [15:0] r;
 	 
  always @( posedge clk )
 	begin
@@ -166,11 +149,11 @@ Register Inst15(ALUBus, regEnable[15], reset, clk, r15);
 endmodule
 /**************/
 
-module ALU(A, B, C, Opcode, Flags);
+module ALU( A, B, C, Opcode, Flags);
 input [15:0] A, B;
 input [7:0] Opcode;
-output reg [15:0] C = 0;
-output reg [4:0] Flags = 0; // Flags[4]-ZF Flags[3]-CF,  Flags[2]-FF, Flags[1]-LF, Flags[0]-NF
+output reg [15:0] C;
+output reg [4:0] Flags; // Flags[4]-ZF Flags[3]-CF,  Flags[2]-FF, Flags[1]-LF, Flags[0]-NF
 
 parameter ADD    = 8'b00000000;
 parameter ADDI   = 8'b00000001;
@@ -198,7 +181,7 @@ parameter ARSH   = 8'b00010110;
 parameter NOP    = 8'b00010111;
 
 
-always @(*)
+always @(A, B, Opcode)
 begin
 	case (Opcode)
 	ADDU:
@@ -428,43 +411,3 @@ begin
 end
 
 endmodule
-
-//module hexTo7Seg(input [3:0]x, output reg [6:0]z);
-//always @*
-//case(x)
-//	4'b0000 :			//Hexadecimal 0
-//	z = ~7'b0111111;
-//   4'b0001 :			//Hexadecimal 1
-//	z = ~7'b0000110;
-//   4'b0010 :			//Hexadecimal 2
-//	z = ~7'b1011011;
-//   4'b0011 : 			//Hexadecimal 3
-//	z = ~7'b1001111;
-//   4'b0100 : 			//Hexadecimal 4
-//	z = ~7'b1100110;
-//   4'b0101 : 			//Hexadecimal 5
-//	z = ~7'b1101101;
-//   4'b0110 : 			//Hexadecimal 6
-//	z = ~7'b1111101;
-//   4'b0111 :			//Hexadecimal 7
-//	z = ~7'b0000111;
-//   4'b1000 : 			//Hexadecimal 8
-//	z = ~7'b1111111;
-//   4'b1001 : 			//Hexadecimal 9
-//	z = ~7'b1100111;
-//	4'b1010 : 			//Hexadecimal A
-//	z = ~7'b1110111;
-//	4'b1011 : 			//Hexadecimal B
-//	z = ~7'b1111100;
-//	4'b1100 : 			//Hexadecimal C
-//	z = ~7'b1011000;
-//	4'b1101 : 			//Hexadecimal D
-//	z = ~7'b1011110;
-//	4'b1110 : 			//Hexadecimal E
-//	z = ~7'b1111001;
-//	4'b1111 : 			//Hexadecimal F	
-//	z = ~7'b1110001; 
-//   default :
-//	z = ~7'b0000000;
-//endcase
-//endmodule 
