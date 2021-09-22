@@ -11,41 +11,50 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-module RegFile(Clocks, reset, out1, out2);
+module RegFile(Clocks, reset, out1, out2, out3, out4);
 	wire [15:0] RegEnable; //This was an input, but changed to wire for FSM
 	input Clocks, reset;
 	
 	//Internal Wires
 	wire [15:0] Bus, alu_out, r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, outA, outB, BInput;
-	wire reset;
 	wire [4:0] flagswire;
 	wire [7:0] opcode;
-	output wire [6:0] out1, out2;
+	output reg [3:0] out1, out2, out3, out4;
+	wire [3:0] regACont, regBCont;
 	
 	//Finite State Machine
-	myFSMBaby bby(Clocks, reset, RegEnable, opcode); //This is just for a testbench type control
+	myFSMBaby bby(Clocks, reset, RegEnable, regACont, regBCont, opcode); //This is just for a testbench type control
 	
-	FlagReg flags (Clocks, flagswire, flagswire);
-	alu_mux alumux(outB, 4'b0001, 8'b00000011, BInput);
-	reg_mux regA (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, 4'b0110,outA);
-	reg_mux regB (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, 4'b0111,outB);
+	RegBank reg_bank(Bus,r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, RegEnable, Clocks, reset);	FlagReg flags (Clocks, flagswire, flagswire);
+	reg_mux regA (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, regACont,outA);
+	reg_mux regB (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, regBCont,outB);
+	alu_mux alumux(outB, 4'b0001, opcode, BInput);
 	ALU alu(outA, BInput, Bus, opcode, flagswire);
-	RegBank reg_bank(Bus,r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, RegEnable, Clocks, reset);
-	
-	//Output Display
-	hexTo7Seg firstdigit (outB[3:0],out1);
-	hexTo7Seg seconddigit (outB[7:4],out2);
-	
+
+	always@(outA) begin
+	out1 = outA[3:0];
+	out2 = outA[7:4];
+	out3 = outA[11:8];
+	out4 = outA[15:12];
+	end
+//	
+//	//Output Display
+//	hexTo7Seg firstdigit (r15[3:0],out1);
+//	hexTo7Seg seconddigit (r15[7:4],out2);
+//	hexTo7Seg thirddigit (r15[11:8],out3);
+//	hexTo7Seg fourthdigit (r15[15:12],out4);
+//	
 endmodule
 
 //Stuff needs to be altered.
-module myFSMBaby(clock, Reset, regControl, AluOp);
+module myFSMBaby(clock, Reset, regControl, regACont, regBCont, AluOp);
 
 	input clock, Reset;
 	output reg [15:0] regControl;
 	output reg [7:0] AluOp;
+	output reg [3:0] regACont, regBCont;
 
-	parameter S0=4'd0, S1=4'd1, S2=4'd2, S3=4'd3, S4=4'd4, S5=4'd5, S6=4'd6, S7=4'd7, S8=4'd8, S9=4'd9;
+	parameter S0=4'd0, S1=4'd1;//, S2=4'd2, S3=4'd3;
 					 
 	reg [3:0] states, S;	//PS - present state, NS
 	
@@ -56,6 +65,7 @@ module myFSMBaby(clock, Reset, regControl, AluOp);
 					S <= S0;
 			  else
 					S <= states;
+					
 	end
 
 
@@ -63,33 +73,48 @@ module myFSMBaby(clock, Reset, regControl, AluOp);
 	always@(S)begin
 		case(S)
 						S0: states=S1;
-						S1: states=S2;
-						S2: states=S3;
-						S3: states=S4;
-						S4: states=S5;
-						S5: states=S6;
-						S6: states=S7;
-						S7: states=S8;
-						S8: states=S9;
-						S9: states=S9;
-						default: states = 4'd15;
+						S1: states=S1;
+//						S2: states=S3;
+//						S3: states=S3;
+//						S4: states=S5;
+//						S5: states=S6;
+//						S6: states=S7;
+//						S7: states=S8;
+//						S8: states=S9;
+//						S9: states=S10;
+//						S10: states=S11;
+//						S11: states=S12;
+//						S12: states=S13;
+//						S13: states=S14;
+//						S14: states=S14;
+//						default: states = 4'd15;
 					endcase
 	end
 
 	//Output relies only on current state
 	always@(states)begin
-	case (states)
-		S0 : begin regControl = 16'b0010; AluOp = 2'b00; end //Reset every register and buffer close
-		S1 : begin regControl = 3'b001; AluOp = 2'b00; end //open buffer for data and load R1
-		S2 : begin regControl = 3'b010; AluOp = 2'b00; end //open up R2 for loadimmediate
-		S3 : begin regControl = 3'b100; AluOp = 2'b00; end //Add numbers and store in R3
-		S4 : begin regControl = 3'b010; AluOp = 2'b00; end //Transfer data to R2
-		S5 : begin  regControl = 3'b100; AluOp = 2'b01; end //Bitwise OR R1+R2
-		S6 : begin regControl = 3'b101; AluOp = 2'b01; end //Move Output to R1
-		S7 : begin regControl = 3'b100; AluOp = 2'b11; end //Bitwise Complement
-		S8 : begin regControl = 3'b101; AluOp = 2'b11; end //Move R3 to R1
-		S9 : begin  regControl = 3'b100; AluOp = 2'b10; end //XOR R1 and R2
-		default : begin  regControl = 3'b010; AluOp = 2'b00; end //Shouldn't happen
+	case (states) //Fibonnacci sequence
+		S0 : begin regControl = 16'h0003; AluOp = 8'd1; regACont = 4'b0001; regBCont = 4'b0000;end //Loading 1 into ALU
+		S1 : begin regControl = 16'h0003; AluOp = 8'd1; regACont = 4'b0001; regBCont = 4'b0000;end //Write R0 and R1
+//		S2 : begin regControl = 16'h0004; AluOp = 8'd0; regACont = 4'b0001; regBCont = 4'b0000;end //
+//		S3 : begin regControl = 16'h0010; AluOp = 8'd0; regACont = 4'b0011; regBCont = 4'b0010;end 
+		
+		
+		//open up R2 for loadimmediate
+//		S4 : begin regControl = 16'h0020; AluOp = 8'd0; regACont = 4'b0100; regBCont = 4'b0011;end //Add numbers and store in R3
+//		S5 : begin regControl = 16'h0040; AluOp = 8'd0; regACont = 4'b0101; regBCont = 4'b0100;end //Transfer data to R2
+//		S6 : begin regControl = 16'h0080; AluOp = 8'd0; regACont = 4'b0110; regBCont = 4'b0101;end //Bitwise OR R1+R2
+//		S7 : begin regControl = 16'h0100; AluOp = 8'd0; regACont = 4'b0111; regBCont = 4'b0110;end //Move Output to R1
+//		S8 : begin regControl = 16'h0200; AluOp = 8'd0; regACont = 4'b1000; regBCont = 4'b0111;end //Bitwise Complement
+//		S9 : begin regControl = 16'h0400; AluOp = 8'd0; regACont = 4'b1001; regBCont = 4'b1000;end //Move R3 to R1
+//		S10: begin regControl = 16'h0800; AluOp = 8'd0; regACont = 4'b1010; regBCont = 4'b1001;end //XOR R1 and R2
+//		S11: begin regControl = 16'h1000; AluOp = 8'd0; regACont = 4'b1011; regBCont = 4'b1010;end
+//		S12: begin regControl = 16'h2000; AluOp = 8'd0; regACont = 4'b1100; regBCont = 4'b1011;end
+//		S13: begin regControl = 16'h4000; AluOp = 8'd0; regACont = 4'b1101; regBCont = 4'b1100;end
+//		S14: begin regControl = 16'h8000; AluOp = 8'd0; regACont = 4'b1110; regBCont = 4'b1101;end
+//		//S14: begin regControl = 16'hF; AluOp = 8'd0; regACont = 4'b1111; regBCont = 4'b1110;end
+//				
+//		default : begin  regControl = 3'b010; AluOp = 2'b00; end //Shouldn't happen
 		endcase
 	end
 
@@ -107,23 +132,6 @@ module FlagReg (Clock, flag_reg_in, flag_reg_out);
 	end
 	
 endmodule
-
-module alu_mux(reg_val, imm_val, op_control, out);
-	input [15:0] reg_val;
-	input [3:0] imm_val;
-	input [7:0] op_control;
-	output reg [15:0] out;
-	
-	always @(*)begin//If op_control is equal to any immediate instructions
-	if (op_control == 8'b00000001 || op_control == 8'b00000011 || op_control == 8'b00000110 || op_control == 8'b00000111|| op_control == 8'b00001001 || op_control == 8'b00010010 || op_control ==  8'b00010100) begin
-			out = $signed(imm_val); end
-			
-	else begin
-		out = reg_val; end
-	end
-		
-endmodule
-
 
 module reg_mux(r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, s, out);
 	input [15:0] r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15; 
@@ -153,13 +161,28 @@ module reg_mux(r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, 
 	
 endmodule
 
+module alu_mux(reg_val, imm_val, op_control, out);
+	input [15:0] reg_val;
+	input [3:0] imm_val;
+	input [7:0] op_control;
+	output reg [15:0] out;
+	
+	always @(*)begin//If op_control is equal to any immediate instructions
+	if (op_control == 8'b00000001 || op_control == 8'b00000011 || op_control == 8'b00000110 || op_control == 8'b00000111|| op_control == 8'b00001001 || op_control == 8'b00010010 || op_control ==  8'b00010100) begin
+			out = $signed(imm_val); end
+			
+	else begin
+		out = reg_val; end
+	end
+		
+endmodule
 
 module Register(D_in, wEnable, reset, clk, r);
 	input [15:0] D_in;
 	input clk, wEnable, reset;
 	output reg [15:0] r;
 	 
- always @( posedge clk )
+ always @( negedge clk )
 	begin
 		if (reset) r <= 16'b00000000_00000000;
 	else
@@ -353,7 +376,7 @@ begin
 		begin
 		if( $signed(A) < $signed(B) ) Flags[1:0] = 2'b11;
 		else Flags[1:0] = 2'b00;
-		C = 16'd0;
+		C = 16'dx;
 		if ($signed(A) == $signed(B)) Flags[4:2] = 3'b100;
 		else Flags[4:2] = 3'b000;
 		end
@@ -362,7 +385,7 @@ begin
 		begin
 		if ( A < B ) Flags[1:0] = 2'b10; // A is Rdest, B is Rsrc
 		else Flags[1:0] = 2'b00;
-		C = 16'd0;
+		C = 16'dx;
 		if (A == B) Flags[4:2] = 3'b100;
 		else Flags[4:2] = 3'b000;
 		end
@@ -377,19 +400,19 @@ begin
 	OR:
 		begin
 			C = A | B;
-			Flags = 5'd0;
+			Flags = 5'dx;
 		end
 
 	XOR:
 		begin
 		C = A ^ B;
-		Flags = 5'd0;
+		Flags = 5'dx;
 		end
 
 	NOT:
 		begin
 			C = ~A; // Output is opposite of A, either 1 or 0
-		Flags = 5'd0;
+		Flags = 5'dx;
 		end
 
   LSH:
@@ -401,7 +424,7 @@ begin
       else
         // Perform shift by 1
         C = A << 1;
-      Flags = Flags;
+      Flags = 5'dx;
       end
 
   LSHI:
@@ -413,7 +436,7 @@ begin
     else
       // Perform shift by 1
       C = A << 1;
-    Flags = Flags;
+    Flags = 5'dx;
     end
 
   ARSH:
@@ -425,7 +448,7 @@ begin
     else
       // Perform shift by 1
       C = A >>> 1; // Sign extended
-    Flags = Flags;
+    Flags = 5'dx;
     end
 
   ALSH:
@@ -437,7 +460,7 @@ begin
     else
       // Perform shift by 1
       C =A << 1; // Sign extended
-	Flags = Flags;
+	Flags = 5'dx;
     end
 
   RSH:
@@ -449,7 +472,7 @@ begin
     else
       // Perform shift by 1
       C = A >> 1; // logical extended
-	Flags = Flags;
+	Flags = 5'dx;
     end
   RSHI:
     begin
@@ -460,18 +483,20 @@ begin
     else
       // Perform shift by 1
       C = A >>> 1; // Sign extended
-	Flags = Flags;
+	Flags = 5'dx;
     end
 
   NOP:
     begin
    	//do nothing
+		C = 16'dx;
+		Flags = 5'dx;
 
     end
 
 	default:
 		begin
-			C = 4'b0000;
+			C = 16'b0000;
 			Flags = 5'b00000;
 		end
 	endcase
