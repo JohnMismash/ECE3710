@@ -50,12 +50,11 @@ module myFSMBaby2(clock, Reset, regControl, regACont, regBCont, AluOp);
 		S1 : begin regControl = 16'h0003; AluOp = 8'd1; regACont = 4'b0001; regBCont = 4'b0000;end //Inserts 1 into R0 and R1
 		S2 : begin regControl = 16'h0004; AluOp = 8'b00010001; regACont = 4'b0001; regBCont = 4'b0000;end //Stores R1 << 1 to C and saves in R2 i.e 1 ->10
 		S3 : begin regControl = 16'h0008; AluOp = 8'b00010001; regACont = 4'b0010; regBCont = 4'b0010;end // R2 << R2 = R3  i.e. 10 -> 1000
-		
-		
-		//open up R2 for loadimmediate
 		S4 : begin regControl = 16'h0010; AluOp = 8'd9; regACont = 4'b0011; regBCont = 4'b0010;end //R3 - 1 = R4
-		S5 : begin regControl = 16'h0040; AluOp = 8'd8; regACont = 4'b0011; regBCont = 4'b0100;end // 7 - 8 = f or -1
-		S6 : begin regControl = 16'h0080; AluOp = 8'd15; regACont = 4'b0011; regBCont = 4'b0010;end //7 ^ 2 = 5, 0111 ^ 0010 = 0101
+		S5 : begin regControl = 16'h0020; AluOp = 8'd8; regACont = 4'b0100; regBCont = 4'b0011;end // 7 - 8 = f or -1
+		S6 : begin regControl = 16'h0040; AluOp = 8'd15; regACont = 4'b0100; regBCont = 4'b0010;end //7 ^ 2 = 5, 0111 ^ 0010 = 0101
+		
+		
 //		S7 : begin regControl = 16'h0100; AluOp = 8'd0; regACont = 4'b0111; regBCont = 4'b0110;end //Move Output to R1
 //		S8 : begin regControl = 16'h0200; AluOp = 8'd0; regACont = 4'b1000; regBCont = 4'b0111;end //Bitwise Complement
 //		S9 : begin regControl = 16'h0400; AluOp = 8'd0; regACont = 4'b1001; regBCont = 4'b1000;end //Move R3 to R1
