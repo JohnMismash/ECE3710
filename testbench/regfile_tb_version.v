@@ -11,7 +11,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-module regfile_tb_version(Clocks, reset, RegEnable, reg_s1, reg_s2, imm_val, opcode, r15);
+module regfile_tb_version(Clocks, reset, RegEnable, reg_s1, reg_s2, imm_val, opcode, r15, Bus);
 	input wire [15:0] RegEnable; //This was an input, but changed to wire for FSM
 	input [3:0] reg_s1, reg_s2;
 	input [3:0] imm_val;
@@ -19,27 +19,18 @@ module regfile_tb_version(Clocks, reset, RegEnable, reg_s1, reg_s2, imm_val, opc
 	input Clocks, reset;
 	
 	//Internal Wires
-	wire [15:0] Bus, alu_out, r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, outA, outB, BInput;
-	output wire [15:0] r15;
+	wire [15:0] r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, outA, outB, BInput;
+	output wire [15:0] r15, Bus;
 	wire [4:0] flagswire;
 	wire [7:0] opcode;
 	wire [6:0] out1, out2;
 	
-	
-	//Finite State Machine
-	//myFSMBaby bby(Clocks, reset, RegEnable, opcode); //This is just for a testbench type control
-	
-	//FlagReg flags (Clocks, flagswire, flagswire);
 	reg_mux regA (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, reg_s1, outA);
 	reg_mux regB (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, reg_s2, outB);
 	alu_mux alumux(outB, imm_val, opcode, BInput);
 	
 	ALU alu(outA, BInput, Bus, opcode, flagswire);
 	RegBank reg_bank(Bus,r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, RegEnable, Clocks, reset);
-	
-	//Output Display
-	//hexTo7Seg firstdigit (outB[3:0],out1);
-	//hexTo7Seg seconddigit (outB[7:4],out2);
 	
 endmodule
 
