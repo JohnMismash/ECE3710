@@ -1,0 +1,24 @@
+module FSM(Clocks, reset, RegEnable, reg_s1, reg_s2, imm_val, opcode, Bus);
+	input Clocks, reset;
+	input [15:0] RegEnable;
+	input [3:0] reg_s1, reg_s2, imm_val;
+	input [7:0] opcode]
+	wire [15:0] r15;
+	
+	output [15:0] Bus;
+	
+	regfile_tb_version(
+		.Clocks(Clocks),
+		.reset(reset),
+		.RegEnable(RegEnable),
+		.reg_s1(reg_s1),
+		.reg_s2(reg_s2),
+		.imm_val(imm_val),
+		.opcode(opcode),
+		.r15(r15),
+		.Bus(Bus)
+	);
+	//Output Display
+	hexTo7Seg firstdigit (Bus[3:0],out1);
+	hexTo7Seg seconddigit (Bus[7:4],out2);
+	

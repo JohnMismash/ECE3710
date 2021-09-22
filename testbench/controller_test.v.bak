@@ -22,7 +22,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-module fibonacci_test;
+module controller_test;
 
 	// Inputs
 	reg [15:0] RegEnable; //This was an input, but changed to wire for FSM
@@ -35,18 +35,13 @@ module fibonacci_test;
 	wire [15:0] r15;		
 	wire [15:0] Bus;
 	integer i;
-
+module Controller(Clocks, reset, out1, out2);
 	// Instantiate the Unit Under Test (UUT)
-	regfile_tb_version uut (
+	controller uut (
 		.Clocks(Clocks),
 		.reset(reset),
-		.RegEnable(RegEnable),
-		.reg_s1(reg_s1),
-		.reg_s2(reg_s2),
-		.imm_val(imm_val),
-		.opcode(opcode),
-		.r15(r15),
-		.Bus(Bus)
+		.out1(out1),
+		.out2(out2)
 	);
 
 	initial begin
