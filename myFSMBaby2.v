@@ -28,7 +28,7 @@ module myFSMBaby2(clock, Reset, regControl, regACont, regBCont, AluOp);
 						S1: states=S2;
 						S2: states=S3;
 						S3: states=S4;
-						S4: states=S4;
+						S4: states=S5;
 						S5: states=S6;
 						S6: states=S6;
 //						S7: states=S8;
