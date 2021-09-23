@@ -55,12 +55,12 @@ module myFSMBaby1(clock, Reset, regControl, regACont, regBCont, AluOp);
 		S5 : begin regControl = 16'h0020; AluOp = 8'd0; regACont = 4'b0100; regBCont = 4'b0011;end //R3 + R4 = R5
 		S6 : begin regControl = 16'h0040; AluOp = 8'd0; regACont = 4'b0101; regBCont = 4'b0100;end //R4 + R5 = R6
 		S7 : begin regControl = 16'h0080; AluOp = 8'd0; regACont = 4'b0110; regBCont = 4'b0101;end //R5 + R6 = R7
-		S8 : begin regControl = 16'h0200; AluOp = 8'd0; regACont = 4'b0111; regBCont = 4'b0110;end //R6 + R7 = R8
-		S9 : begin regControl = 16'h0400; AluOp = 8'd0; regACont = 4'b1000; regBCont = 4'b0111;end //R7 + R8 = R9
-		S10: begin regControl = 16'h0800; AluOp = 8'd0; regACont = 4'b1001; regBCont = 4'b1000;end //R8 + R9 = R10
-		S11: begin regControl = 16'h1000; AluOp = 8'd0; regACont = 4'b1010; regBCont = 4'b1001;end //R9 + R10 = R11
-		S12: begin regControl = 16'h2000; AluOp = 8'd0; regACont = 4'b1011; regBCont = 4'b1010;end //R10 + R11 = R12
-		S13: begin regControl = 16'h4000; AluOp = 8'd0; regACont = 4'b1100; regBCont = 4'b1011;end //R11 + R12 = R13
+		S8 : begin regControl = 16'h0100; AluOp = 8'd0; regACont = 4'b0111; regBCont = 4'b0110;end //R6 + R7 = R8
+		S9 : begin regControl = 16'h0200; AluOp = 8'd0; regACont = 4'b1000; regBCont = 4'b0111;end //R7 + R8 = R9
+		S10: begin regControl = 16'h0400; AluOp = 8'd0; regACont = 4'b1001; regBCont = 4'b1000;end //R8 + R9 = R10
+		S11: begin regControl = 16'h0800; AluOp = 8'd0; regACont = 4'b1010; regBCont = 4'b1001;end //R9 + R10 = R11
+		S12: begin regControl = 16'h1000; AluOp = 8'd0; regACont = 4'b1011; regBCont = 4'b1010;end //R10 + R11 = R12
+		S13: begin regControl = 16'h2000; AluOp = 8'd0; regACont = 4'b1100; regBCont = 4'b1011;end //R11 + R12 = R13
 //		S14: begin regControl = 16'h8000; AluOp = 8'd0; regACont = 4'b1110; regBCont = 4'b1101;end
 //		//S14: begin regControl = 16'hF; AluOp = 8'd0; regACont = 4'b1111; regBCont = 4'b1110;end
 		endcase
