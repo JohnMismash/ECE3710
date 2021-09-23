@@ -22,8 +22,8 @@ module RegFile(Clocks, reset, out1, out2, out3, out4);
 	output wire [6:0] out1, out2, out3, out4;
 	wire [3:0] regACont, regBCont;
 	
-	//Finite State Machine-FSM is located in another file
-	myFSMBaby1 bby(.clock(Clocks),	.Reset(reset), .regControl(RegEnable), .regACont(regACont), .regBCont(regBCont), .AluOp(opcode)); //Change from 1-2 for different FSM
+	//Finite State Machine
+	myFSMBaby1 bby(.clock(Clocks),	.Reset(reset), .regControl(RegEnable), .regACont(regACont), .regBCont(regBCont), .AluOp(opcode)); //This is just for a testbench type control
 	
 	RegBank reg_bank(Bus,r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, RegEnable, Clocks, reset);	
 	Register flags (flagswire, 1'b1, reset, Clocks, flagswire); //Clocks, flagswire, flagswire);
@@ -48,17 +48,17 @@ module RegFile(Clocks, reset, out1, out2, out3, out4);
 endmodule
 
 
-module FlagReg (Clock, flag_reg_in, flag_reg_out);
-	input Clock;//, enable;
-	input [4:0] flag_reg_in;
-	output reg [4:0] flag_reg_out;
-	
-	always @(posedge Clock) begin
-		//if (enable)
-			flag_reg_out = flag_reg_in;
-	end
-	
-endmodule
+//module FlagReg (Clock, flag_reg_in, flag_reg_out);
+//	input Clock;//, enable;
+//	input [4:0] flag_reg_in;
+//	output reg [4:0] flag_reg_out;
+//	
+//	always @(posedge Clock) begin
+//		//if (enable)
+//			flag_reg_out = flag_reg_in;
+//	end
+//	
+//endmodule
 
 module reg_mux(r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, s, out);
 	input [15:0] r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15; 
@@ -109,7 +109,7 @@ module Register(D_in, wEnable, reset, clk, r);
 	input clk, wEnable, reset;
 	output reg [15:0] r;
 	 
- always @( posedge clk )
+ always @( negedge clk )
 	begin
 		if (!reset) begin
 			r <= 16'b0000000000000000; end
