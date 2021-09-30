@@ -18,6 +18,11 @@ module FSM_Wrapper(Clock, Reset, out1, out2, out3, out4);
 	
 	FSM myfsm(Clock, Reset, newDataA, newDataB, newAddrA, newAddrB);
 	
+	hexTo7Seg blockdata1(outputA[3:0], out1);
+	hexTo7Seg blockdata2(outputA[7:4], out2);
+	hexTo7Seg blockdata3(outputA[11:8], out3);
+	hexTo7Seg blockdata4(outputA[15:12], out4);
+	
 endmodule 
 
 module FSM (clock, Reset, dataA, dataB, addressA, addressB, enableA, enableB);
