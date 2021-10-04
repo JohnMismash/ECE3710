@@ -1,25 +1,26 @@
-module FSM_Wrapper(Clock, Reset, out1, out2, out3, out4);
+module FSM_Wrapper(Clock, Reset, out1, out3, out4);
 
 	input Clock, Reset;
-	output wire [6:0] out1, out2, out3, out4;
+	output wire [6:0] out1, out3, out4;
 	
 	wire [15:0] newDataA, newDataB, outputA, outputB;
 	wire [9:0] newAddrA, newAddrB;
 	wire ea, eb;
 	
+	reg[15:0] ram [65536:0];
 	initial //Initializes some memory
 	begin
 	
-	$readmemh("initialize.txt", rom);
+	$readmemh("initialize.txt", ram);
 	
 	end
 		
-	dualmem(newDataA, newDataB, newAddrA, newAddrB, ea, eb, Clock, outputA, outputB);	
+	doublemem mymem(newDataA, newDataB, newAddrA, newAddrB, ea, eb, Clock, outputA, outputB);	
 	
 	FSM myfsm(Clock, Reset, newDataA, newDataB, newAddrA, newAddrB);
 	
 	hexTo7Seg blockdata1(outputA[3:0], out1);
-	hexTo7Seg blockdata2(outputA[7:4], out2);
+	//hexTo7Seg blockdata2(outputA[7:4], out2);
 	hexTo7Seg blockdata3(outputA[11:8], out3);
 	hexTo7Seg blockdata4(outputA[15:12], out4);
 	
@@ -54,7 +55,7 @@ module FSM (clock, Reset, dataA, dataB, addressA, addressB, enableA, enableB);
 		case(S)
 						S0: states=S1;
 						S1: states=S2;
-						S2: states=S3;
+						S2: states=S2;
 //						S3: states=S4;
 //						S4: states=S5;
 //						S5: states=S6;
@@ -71,12 +72,15 @@ module FSM (clock, Reset, dataA, dataB, addressA, addressB, enableA, enableB);
 					endcase
 	end
 
-//	//Output relies only on current state
-//	always@(states)begin
-//	case (states) //Fibonnacci sequence
-//		S0 : begin data = 16'h0000; address = 8'd1; end //Intitialize registers to 0
-//		S1 : begin data = 16'h0003; address = 8'd1; end //Inserts 1 into R0 and R1
-//		S2 : begin data = 16'h0004; address = 8'd0; end //Stores R0 + R1 to C and saves in R2
+	//Output relies only on current state
+	always@(states)begin
+	case (states) //Fibonnacci sequence
+		S0 : begin dataA = 16'h44; dataB = 16'h0; addressA = 10'd1; addressB = 10'd1;
+			enableA = 0; enableB = 0;end //read from address 1
+		S1 : begin dataA = 16'h3; dataB = 16'h0; addressA = 10'd1; addressB = 10'd2;
+			enableA = 1; enableB = 0;end //change the addres memory to 3
+		S2 : begin dataA = 16'h4; dataB = 16'h0; addressA = 10'd1; addressB = 10'd512;
+			enableA = 0; enableB = 0;end //verify value saved
 //		S3 : begin data = 16'h0008; address = 8'd0; end // R1 + R2 = R3
 //		S4 : begin data = 16'h0010; address = 8'd0; end //R3 + R2 = R4
 //		S5 : begin data = 16'h0020; address = 8'd0; end //R3 + R4 = R5
@@ -90,8 +94,8 @@ module FSM (clock, Reset, dataA, dataB, addressA, addressB, enableA, enableB);
 //		S13: begin data = 16'h2000; address = 8'd0; end //R11 + R12 = R13
 //		S14: begin data = 16'h8000; address = 8'd0; end
 //		//S14: begin data = 16'hF; address = 8'd0; end
-		//endcase
-//	end
+	endcase
+	end
 
 
 endmodule 
@@ -106,9 +110,10 @@ module doublemem
 );
 
 	reg [1:0] we_a1, we_b1;
-
-	true_dual_port_ram_single_clock firstmem(.data_a(data_a), .data_b(data_b), .addr_a(addr_a[8:0]), .addr_b(addr_b[8:0]), .we_a(we_a1[0]), .we_b(we_b1[0]), .clk(clk), .q_a(q_a), .q_b(q_b));
-	true_dual_port_ram_single_clock secondmem(.data_a(data_a), .data_b(data_b), .addr_a(addr_a[8:0]), .addr_b(addr_b[8:0]), .we_a(we_a1[1]), .we_b(we_b1[1]), .clk(clk), .q_a(q_a), .q_b(q_b));
+	wire [31:0] outA, outB;
+	
+	true_dual_port_ram_single_clock firstmem(.data_a(data_a), .data_b(data_b), .addr_a(addr_a[8:0]), .addr_b(addr_b[8:0]), .we_a(we_a1[0]), .we_b(we_b1[0]), .clk(clk), .q_a(outA[15:0]), .q_b(outB[15:0]));
+	true_dual_port_ram_single_clock secondmem(.data_a(data_a), .data_b(data_b), .addr_a(addr_a[8:0]), .addr_b(addr_b[8:0]), .we_a(we_a1[1]), .we_b(we_b1[1]), .clk(clk), .q_a(outA[31:16]), .q_b(outB[31:16]));
 
 	always@(data_a, addr_a, we_a, clk) begin //for one port
 	
@@ -142,6 +147,21 @@ module doublemem
 		
 	end
 
+	//This is for displaying proper output
+	always@(clk, outA)begin
+		if(addr_a[9] == 1)
+			q_a <= outA[31:16];
+		else 
+			q_a <= outA[15:0];	
+	end
+	
+	always@(clk, outB)begin
+		if(addr_b[9] == 1)
+			q_b <= outB[31:16];
+		else 
+			q_b <= outB[15:0];	
+	end
+	
 endmodule 
 
 module hexTo7Seg(input [3:0]x, output reg [6:0]z);
