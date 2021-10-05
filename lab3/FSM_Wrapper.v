@@ -6,18 +6,10 @@ module FSM_Wrapper(Clock, Reset, out1, out3, out4);
 	wire [15:0] newDataA, newDataB, outputA, outputB;
 	wire [9:0] newAddrA, newAddrB;
 	wire ea, eb;
-	
-	reg[15:0] ram [65536:0];
-	initial //Initializes some memory
-	begin
-	
-	$readmemh("initialize.txt", ram);
-	
-	end
 		
 	doublemem mymem(newDataA, newDataB, newAddrA, newAddrB, ea, eb, Clock, outputA, outputB);	
 	
-	FSM myfsm(Clock, Reset, newDataA, newDataB, newAddrA, newAddrB);
+	FSM myfsm(Clock, Reset, newDataA, newDataB, newAddrA, newAddrB, ea, eb);
 	
 	hexTo7Seg blockdata1(outputA[3:0], out1);
 	//hexTo7Seg blockdata2(outputA[7:4], out2);
@@ -112,8 +104,11 @@ module doublemem
 	reg [1:0] we_a1, we_b1;
 	wire [31:0] outA, outB;
 	
+
+	
 	true_dual_port_ram_single_clock firstmem(.data_a(data_a), .data_b(data_b), .addr_a(addr_a[8:0]), .addr_b(addr_b[8:0]), .we_a(we_a1[0]), .we_b(we_b1[0]), .clk(clk), .q_a(outA[15:0]), .q_b(outB[15:0]));
-	true_dual_port_ram_single_clock secondmem(.data_a(data_a), .data_b(data_b), .addr_a(addr_a[8:0]), .addr_b(addr_b[8:0]), .we_a(we_a1[1]), .we_b(we_b1[1]), .clk(clk), .q_a(outA[31:16]), .q_b(outB[31:16]));
+	true_dual_port_ram_single_clock #(.file("C:/Users/Owner/Documents/ECE3710/sinitialize.txt"))
+		secondmem(.data_a(data_a), .data_b(data_b), .addr_a(addr_a[8:0]), .addr_b(addr_b[8:0]), .we_a(we_a1[1]), .we_b(we_b1[1]), .clk(clk), .q_a(outA[31:16]), .q_b(outB[31:16]));
 
 	always@(data_a, addr_a, we_a, clk) begin //for one port
 	
@@ -203,3 +198,55 @@ case(x)
 	z = ~7'b0000000;
 endcase
 endmodule 
+
+// Quartus Prime Verilog Template
+// True Dual Port RAM with single clock
+
+module true_dual_port_ram_single_clock
+#(parameter DATA_WIDTH=16, parameter ADDR_WIDTH=9, parameter file = "C:/Users/Owner/Documents/ECE3710/initialize.txt")
+(
+	input [(DATA_WIDTH-1):0] data_a, data_b,
+	input [(ADDR_WIDTH-1):0] addr_a, addr_b, 
+	input we_a, we_b, clk,
+	output reg [(DATA_WIDTH-1):0] q_a, q_b
+);
+
+	// Declare the RAM variable
+	reg [DATA_WIDTH-1:0] ram[2**ADDR_WIDTH-1:0];
+
+	initial //Initializes some memory
+	begin
+	
+	$readmemh(file, ram);
+	
+	end
+
+	// Port A 
+	always @ (posedge clk)
+	begin
+		if (we_a) 
+		begin
+			ram[addr_a] <= data_a;
+			q_a <= data_a;
+		end
+		else 
+		begin
+			q_a <= ram[addr_a];
+		end 
+	end 
+
+	// Port B 
+	always @ (posedge clk)
+	begin
+		if (we_b) 
+		begin
+			ram[addr_b] <= data_b;
+			q_b <= data_b;
+		end
+		else 
+		begin
+			q_b <= ram[addr_b];
+		end 
+	end
+
+endmodule
