@@ -94,7 +94,7 @@ class TestAssemblerMethods(unittest.TestCase):
             for Rsrc in Rsrc_dict:
                 for Rdst in Rdst_dict:
                     input_string = op + ' ' + Rsrc + ' ' +  Rdst 
-                    correct_answer = op_dict[op] + Rsrc_dict[Rsrc] + Rdst_dict[Rdst]
+                    correct_answer = op_dict[op] + Rdst_dict[Rdst] + Rsrc_dict[Rsrc]
 
                     answer = assemble(input_string)
                     
