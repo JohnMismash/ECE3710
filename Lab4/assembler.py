@@ -1,4 +1,8 @@
-def main(assembly_file):
+import sys, getopt
+
+
+def main(args):
+    assembly_file = args[0]
     with open(assembly_file) as fp:
         lines = fp.readlines()
 
@@ -6,7 +10,7 @@ def main(assembly_file):
         ln = 1
         for line in lines:
             try:
-                converted.append(assemble(line))
+                converted.append(assemble(line) + '\n')
                 ln += 1
 
             except:
@@ -15,7 +19,7 @@ def main(assembly_file):
                 print(line)
                 return 1
 
-    with open('test_file.txt', 'w') as fp:
+    with open('output.txt', 'w') as fp:
         fp.writelines(converted)
 
 
@@ -41,7 +45,7 @@ def assemble(line):
     Rsrc = switch_reg(Rsrc)
     Rdst = switch_reg(Rdst)
     
-    return op + Rsrc + Rdst 
+    return op + Rdst + Rsrc 
 
 
 def switch_op(op):
@@ -126,4 +130,5 @@ def switch_reg(reg):
 
     return bin_value.zfill(4)
 
-main('test.txt')
+if __name__ == '__main__':
+    main(sys.argv[1:])
