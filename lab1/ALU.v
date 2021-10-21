@@ -11,7 +11,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-module ALU( A, B, C, Opcode, Flags);
+module ALU(A, B, C, Opcode, Flags);
 input [15:0] A, B;
 input [7:0] Opcode;
 output reg [15:0] C;

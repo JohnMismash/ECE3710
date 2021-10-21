@@ -1,7 +1,7 @@
-module instruction_decoder(instruction, imm, Clocks, Bus);
+module instruction_decoder(instruction, imm, Clock, Bus);
 	input [15:0] instruction;
 	input [3:0] imm;
-	input Clocks;
+	input Clock;
 
 	wire [15:0] Bus;
 	wire [3:0] reg_w;
@@ -19,15 +19,15 @@ module instruction_decoder(instruction, imm, Clocks, Bus);
 		4to16decoder(A, reg_w);
 
 		//RegBank(Bus, reg_w, clk, reset);
-		RegBank reg_bank(Bus,r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, reg_w, Clocks, reset);	
+		RegBank reg_bank(Bus,r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, reg_w, Clock, reset);
 
-		Register flags (flags, 1'b1, reset, Clocks, flags); 
+		Register flags (flags, 1'b1, reset, Clock, flags);
 		reg_mux regA (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, A,outA);
 		reg_mux regB (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, B,outB);
 		alu_mux alumux(outB, imm, opcode, B_muxed);
 		ALU(outA, B_muxed, Bus, opcode, flags);
 		}
-endmodule 
+endmodule
 
 module 4to16decoder(data, out);
 	input [3:0] d_in;
@@ -53,4 +53,4 @@ module 4to16decoder(data, out);
 		       (d_in == 4'b1111) ? tmp<<15: 16'bxxxx_xxxx_xxxx_xxxx;
 	}
 
-endmodule 
+endmodule
