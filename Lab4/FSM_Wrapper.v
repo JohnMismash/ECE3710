@@ -4,18 +4,19 @@ module FSM_Wrapper(Clock, Reset);
   wire dataB;
   wire enableB;
 
-  output wire [15:0] ouputA;
+  output wire [15:0] instruction_out;
   output wire [4:0] outputB;
-  output wire [15:0] Bus;
+  output wire [15:0] decoder_output;
+  output wire []
   wire [3:0] immediate_value;
 
   initial program_no = 0;
 
   program_counter PC(Clock, Reset, program_no);
-  doublemem mymem(0, dataB, program_no, addressB, 0, enableB, Clock,
-                  ouputA, outputB);
+  doublemem instructions_mem(0, 0, program_no, addressB, 0, enableB, Clock,
+                  instruction_out, 0);
 
-  instruction_decoder ALU_decoder(outputA, outputB, immediate_value, Clock, Bus);
+  instruction_decoder ALU_decoder(instruction_out, Clock, Reset, decoder_output);
 
   FSM myfsm(Clock, Reset, )
 
@@ -23,7 +24,7 @@ module FSM_Wrapper(Clock, Reset);
 endmodule
 
 
-module FSM (clock, Reset);
+module FSM (clock, Reset, output);
 
 	input clock, Reset;
 
