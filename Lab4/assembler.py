@@ -26,26 +26,43 @@ def main(args):
 def assemble(line):
     split = line.split()
 
-    if len(split) != 3:
+    if len(split) > 3:
         raise ValueError
 
     op = split[0]
-    Rsrc = split[1][:-1]
-    Rdst = split[2]
 
-    if len(Rsrc) > 3 or len(Rdst) > 3:
-        raise ValueError
+    if len(split) == 1: # NOP instruction
+        if op != 'NOP':
+            raise ValueError
+        return '0001011100000000'
 
-    if len(Rsrc) < 3:
-        Rsrc = Rsrc[0] + '0' + Rsrc[1]
-    if len(Rdst) < 3:
-        Rdst = Rdst[0] + '0' + Rdst[1]
+    elif len(split) == 2: # NOT instruction
+        if op != 'NOT':
+            raise ValueError
 
-    op = switch_op(op)
-    Rsrc = switch_reg(Rsrc)
-    Rdst = switch_reg(Rdst)
-    
-    return op + Rdst + Rsrc 
+        op = switch_op(op)
+        Rdst = switch_reg(split[1])
+        return_str = op + Rdst + '0000'
+
+        return return_str
+
+    else:
+        Rsrc = split[1][:-1]
+        Rdst = split[2]
+
+        if len(Rsrc) > 3 or len(Rdst) > 3:
+            raise ValueError
+
+        if len(Rsrc) < 3:
+            Rsrc = Rsrc[0] + '0' + Rsrc[1]
+        if len(Rdst) < 3:
+            Rdst = Rdst[0] + '0' + Rdst[1]
+
+        op = switch_op(op)
+        Rsrc = switch_reg(Rsrc)
+        Rdst = switch_reg(Rdst)
+        
+        return op + Rdst + Rsrc 
 
 
 def switch_op(op):
@@ -124,7 +141,14 @@ def switch_op(op):
         raise ValueError
 
 def switch_reg(reg):
-    reg_value = int(reg[1] + reg[2])
+    if len(reg) == 2:
+        reg_value = int(reg[1])
+
+    elif len(reg) == 3:
+        reg_value = int(reg[1] + reg[2])
+
+    else:
+        raise ValueError
 
     bin_value = format(reg_value, 'b')
 
