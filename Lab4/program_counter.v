@@ -9,7 +9,7 @@ end
 
 always@(posedge Enable) begin
 
-if(!Reset)
+if(Reset)
 	program_no = program_no + 1;
 else
 	program_no = 10'd0;
