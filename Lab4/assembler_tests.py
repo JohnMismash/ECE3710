@@ -1,14 +1,17 @@
+# Assembler for ECE 3710
+# Written by Zach Phelan
+
 import unittest
 from assembler import assemble, switch_op, switch_reg, main
 
 class TestAssemblerMethods(unittest.TestCase):
 
     def test_switch_op_ADD(self):
-        test_str = 'ADD' 
+        test_str = 'ADD'
         self.assertEqual(switch_op(test_str), '00000000')
 
     def test_switch_reg_R0(self):
-        test_str = 'R00' 
+        test_str = 'R00'
         self.assertEqual(switch_reg(test_str), '0000')
 
     def test_switch_reg_all(self):
@@ -70,7 +73,7 @@ class TestAssemblerMethods(unittest.TestCase):
             '14,': '1110',
             '15,': '1111'
         }
-        
+
         Rdst_dict = {
             'R0':  '0000',
             'R1':  '0001',
@@ -93,7 +96,7 @@ class TestAssemblerMethods(unittest.TestCase):
         for op in op_dict:
             for imm in imm_dict:
                 for Rdst in Rdst_dict:
-                    input_string = op + ' ' + imm + ' ' +  Rdst 
+                    input_string = op + ' ' + imm + ' ' +  Rdst
                     correct_answer = op_dict[op] + imm_dict[imm] + Rdst_dict[Rdst]
 
                     answer = assemble(input_string)
@@ -137,7 +140,7 @@ class TestAssemblerMethods(unittest.TestCase):
             'R14,': '1110',
             'R15,': '1111'
         }
-        
+
         Rdst_dict = {
             'R0':  '0000',
             'R1':  '0001',
@@ -161,7 +164,7 @@ class TestAssemblerMethods(unittest.TestCase):
             for Rsrc in Rsrc_dict:
                 for Rdst in Rdst_dict:
                     if op == 'NOT':
-                        input_string = op + ' ' + Rdst 
+                        input_string = op + ' ' + Rdst
                         correct_answer = op_dict[op] + Rdst_dict[Rdst] + '0000'
 
                     elif op == 'NOP':
@@ -169,7 +172,7 @@ class TestAssemblerMethods(unittest.TestCase):
                         correct_answer = op_dict[op] + '0000' + '0000'
 
                     else:
-                        input_string = op + ' ' + Rsrc + ' ' +  Rdst 
+                        input_string = op + ' ' + Rsrc + ' ' +  Rdst
                         correct_answer = op_dict[op] + Rdst_dict[Rdst] + Rsrc_dict[Rsrc]
 
                     answer = assemble(input_string)
