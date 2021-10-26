@@ -1,4 +1,4 @@
-# Assembler for ECE 3710
+# Assembler Tests for ECE 3710
 # Written by Zach Phelan
 
 import unittest

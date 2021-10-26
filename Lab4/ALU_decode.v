@@ -7,30 +7,28 @@ module instruction_decoder(instruction, reset, Clocks, outBus);
 	wire [15:0] alu_out, r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, outA, outB, B_muxed;
 
 	output [15:0] outBus;
-	
+
 	reg [3:0] A, B;
 	reg [7:0] opcode;
 
-	always@(*)begin //Sets the different sections of the flag
+	always@(*)begin // Sets the different sections of the flag
 		opcode = instruction[15:8];
 		A = instruction[7:4];
 		B = instruction[3:0];
 	end
 
 	Fourto16decoder regEnable(opcode, A, reg_w);
-	
-	//Component modules
-	RegBank reg_bank(outBus,r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, reg_w, Clocks, reset);	
-	Register flags (flagwire, 1'b1, reset, Clocks, flagwire); 
-	reg_mux regA (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, A,outA);
-	reg_mux regB (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, B,outB);
+
+	// Component Modules
+	RegBank reg_bank(outBus,r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, reg_w, Clocks, reset);
+	Register flags (flagwire, 1'b1, reset, Clocks, flagwire);
+	reg_mux regA (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, A, outA);
+	reg_mux regB (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, B, outB);
 	alu_mux alumux(outB, B, opcode, B_muxed);
 	ALU alu(outA, B_muxed, outBus, opcode, flagwire);
 
-endmodule 
-
+endmodule
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 module Fourto16decoder(Opcode, d_in, d_out);
@@ -42,7 +40,7 @@ module Fourto16decoder(Opcode, d_in, d_out);
 always@(*) begin
 	if (Opcode == 8'd10 || Opcode == 8'd11 || Opcode == 8'd12 || Opcode == 8'd23) //Do not enable any reg in case of CMP or NOP instruction
 		d_out = 16'd0;
-	
+
 	else begin
 		case (d_in)
 			4'b0000: begin d_out = tmp; end
@@ -66,20 +64,18 @@ always@(*) begin
 	end
 end
 
-endmodule 
-
+endmodule
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 module reg_mux(r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, s, out);
-	input [15:0] r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15; 
+	input [15:0] r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
 	input [3:0] s;
 	output reg [15:0] out;
-	
+
 	always @(*) begin
 		case(s)
-			  4'b0000:  out <= r0; 
+			  4'b0000:  out <= r0;
 			  4'b0001:  out <= r1;
 			  4'b0010:  out <= r2;
 			  4'b0011:  out <= r3;
@@ -97,11 +93,9 @@ module reg_mux(r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, 
 			  4'b1111:  out <= r15;
 			  endcase
 	end
-	
+
 endmodule
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 module alu_mux(reg_val, imm_val, op_control, out);
@@ -109,32 +103,30 @@ module alu_mux(reg_val, imm_val, op_control, out);
 	input [3:0] imm_val;
 	input [7:0] op_control;
 	output reg [15:0] out;
-	
+
 	always @(*)begin//If op_control is equal to any immediate instructions
 	if (op_control == 8'b00000001 || op_control == 8'b00000011 || op_control == 8'b00000110 || op_control == 8'b00000111|| op_control == 8'b00001001 || op_control == 8'b00010010 || op_control ==  8'b00010100) begin
 			out = $signed(imm_val); end
-			
+
 	else begin
 		out = reg_val; end
 	end
-		
+
 endmodule
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 module Register(D_in, wEnable, reset, clk, r);
 	input [15:0] D_in;
 	input clk, wEnable, reset;
 	output reg [15:0] r;
-	 
+
  always @( negedge clk )
 	begin
 		if (!reset) begin
 			r <= 16'b0000000000000000; end
 	else
-		begin			
+		begin
 			if (wEnable)
 				begin
 					r <= D_in;
@@ -146,9 +138,7 @@ module Register(D_in, wEnable, reset, clk, r);
 		end
 	end
 endmodule
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Shown below is one way to implement the register file
@@ -164,11 +154,11 @@ module RegBank(ALUBus, r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r1
 	input [15:0] regEnable;
 	output [15:0] r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
 
-	
+
 Register Inst0(
 	.D_in(ALUBus),
 	.wEnable(regEnable[0]),
-	.reset(reset), 
+	.reset(reset),
 	.clk(clk),
 	.r(r0));
 Register Inst1(ALUBus, regEnable[1], reset, clk, r1);
@@ -185,12 +175,10 @@ Register Inst11(ALUBus, regEnable[11], reset, clk, r11);
 Register Inst12(ALUBus, regEnable[12], reset, clk, r12);
 Register Inst13(ALUBus, regEnable[13], reset, clk, r13);
 Register Inst14(ALUBus, regEnable[14], reset, clk, r14);
-Register Inst15(ALUBus, regEnable[15], reset, clk, r15); 
+Register Inst15(ALUBus, regEnable[15], reset, clk, r15);
 
 endmodule
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 module ALU( A, B, C, Opcode, Flags);
@@ -325,7 +313,7 @@ begin
 		else Flags[2] = 1'b0;
 		Flags[1:0] = 2'b00; Flags[3] = 1'b0; //Ensure Other Flags to 0
 		end
-		
+
 	CMP:
 		begin
 		if( $signed(A) < $signed(B) ) Flags[1:0] = 2'b11;
@@ -457,9 +445,7 @@ begin
 end
 
 endmodule
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 module hexTo7Seg(input [3:0]x, output reg [6:0]z);
@@ -495,9 +481,10 @@ case(x)
 	z = ~7'b1011110;
 	4'b1110 : 			//Hexadecimal E
 	z = ~7'b1111001;
-	4'b1111 : 			//Hexadecimal F	
-	z = ~7'b1110001; 
+	4'b1111 : 			//Hexadecimal F
+	z = ~7'b1110001;
    default :
 	z = ~7'b0000000;
 endcase
-endmodule 
+endmodule
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////

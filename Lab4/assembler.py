@@ -1,4 +1,7 @@
-import sys, getopt
+# Assembler for ECE 3710
+# Written by Zach Phelan
+
+import sys
 
 
 def main(args):
@@ -82,81 +85,81 @@ def assemble(line):
             Rdst = switch_reg(Rdst)
 
 
-        val = op + Rdst + Rsrc 
-        return val 
+        val = op + Rdst + Rsrc
+        return val
 
 
 def switch_op(op):
     if op == 'ADD':
         return '00000000'
-        
-    elif op == 'ADDI': 
+
+    elif op == 'ADDI':
         return '00000001'
-    
-    elif op == 'ADDU': 
+
+    elif op == 'ADDU':
         return '00000010'
-    
-    elif op == 'ADDUI': 
+
+    elif op == 'ADDUI':
         return '00000011'
-    
-    elif op == 'ADDC': 
+
+    elif op == 'ADDC':
         return '00000100'
-    
-    elif op == 'ADDCU': 
+
+    elif op == 'ADDCU':
         return '00000101'
-    
-    elif op == 'ADDCUI': 
+
+    elif op == 'ADDCUI':
         return '00000110'
-    
-    elif op == 'ADDCI': 
+
+    elif op == 'ADDCI':
         return '00000111'
-    
-    elif op == 'SUB': 
+
+    elif op == 'SUB':
         return '00001000'
-    
-    elif op == 'SUBI': 
+
+    elif op == 'SUBI':
         return '00001001'
-    
-    elif op == 'CMP': 
+
+    elif op == 'CMP':
         return '00001010'
-    
-    elif op == 'CMPI': 
+
+    elif op == 'CMPI':
         return '00001011'
-    
-    elif op == 'CMPU': 
+
+    elif op == 'CMPU':
         return '00001100'
-    
-    elif op == 'AND': 
+
+    elif op == 'AND':
         return '00001101'
-    
-    elif op == 'OR': 
+
+    elif op == 'OR':
         return '00001110'
-    
-    elif op == 'XOR': 
+
+    elif op == 'XOR':
         return '00001111'
-    
-    elif op == 'NOT': 
+
+    elif op == 'NOT':
         return '00010000'
-    
-    elif op == 'LSH': 
+
+    elif op == 'LSH':
         return '00010001'
-    
-    elif op == 'LSHI': 
+
+    elif op == 'LSHI':
         return '00010010'
-    
-    elif op == 'RSH': 
+
+    elif op == 'RSH':
         return '00010011'
-    
-    elif op == 'RSHI': 
+
+    elif op == 'RSHI':
         return '00010100'
-    
-    elif op == 'ALSH': 
+
+    elif op == 'ALSH':
         return '00010101'
-    
-    elif op == 'ARSH': 
+
+    elif op == 'ARSH':
         return '00010110'
-    
-    elif op == 'NOP': 
+
+    elif op == 'NOP':
         return '00010111'
     else:
         raise ValueError
