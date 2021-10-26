@@ -1,4 +1,4 @@
-module FSM_Wrapper(Clock, Reset);
+module FSM_Wrapper(Clock, Reset, decoder_output);
 
 	input wire Clock, Reset;
 
@@ -6,14 +6,14 @@ module FSM_Wrapper(Clock, Reset);
 	wire prgEnable;
   
   //Program Counter Hookup
-	wire [8:0] program_no;
+	wire [9:0] program_no;
   
   //Memory Hookup
 	wire [15:0] outputB;
 
 	//This is the ALU/Reg Computation Hookups
 	wire [15:0] instruction_out;
-	wire [15:0] decoder_output;
+	output wire [15:0] decoder_output;
 	
 	
 	
@@ -26,7 +26,7 @@ module FSM_Wrapper(Clock, Reset);
 	likewise for wr_enable A and B
 	instruction_out puts out the 16 bit opcode instruction
 	output B is a placeholder for the future*/
-	true_dual_port_ram_single_clock(10'dx, decoder_output, program_no, 0, 0, 0, Clock, instruction_out, outputB); 
+	true_dual_port_ram_single_clock mem(16'dx, decoder_output, program_no, 10'd0, 1'b0, 1'b0, Clock, instruction_out, outputB); 
   
 	instruction_decoder ALU_decoder(.instruction(instruction_out), .reset(Reset), .Clocks(Clock), .outBus(decoder_output));
 
@@ -67,8 +67,8 @@ module FSM (clock, Reset, programCountEnable);
 	always@(S)begin
 		case(S)
 			S0: states=S1;
-			S1: states=S2;
-			S2: states=S2;
+			S1: states=S0;
+//			S2: states=S2;
 //						S3: states=S4;
 //						S4: states=S5;
 //						S5: states=S6;
@@ -88,7 +88,9 @@ module FSM (clock, Reset, programCountEnable);
 	// Output relies only on current state
 	always@(states)begin
 	  case (states)
-			S1: begin programCountEnable <= 0;
+			S0: begin programCountEnable <= 0; end
+			S1: begin programCountEnable <= 1; end
+
 	  endcase
 	end
 
@@ -101,10 +103,10 @@ endmodule
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 module true_dual_port_ram_single_clock
-#(parameter DATA_WIDTH=16, parameter ADDR_WIDTH=16, parameter file = "C:/Users/Owner/Documents/ECE3710/initialize.txt")
+#(parameter DATA_WIDTH=16, parameter ADDR_WIDTH=10, parameter file = "C:/Users/Owner/Documents/ECE3710/initialize.txt")
 (
 	input [(DATA_WIDTH-1):0] data_a, data_b,
-	input [(ADDR_WIDTH-1):0] addr_a, addr_b, 
+	input [(ADDR_WIDTH-1):0] addr_a, addr_b,
 	input we_a, we_b, clk,
 	output reg [(DATA_WIDTH-1):0] q_a, q_b
 );
@@ -115,7 +117,7 @@ module true_dual_port_ram_single_clock
 	initial //Initializes some memory
 	begin
 	
-	$readmemh(file, ram);
+	$readmemb(file, ram);
 	
 	end
 
