@@ -4,7 +4,7 @@ module instruction_decoder(instruction, reset, Clocks, outBus);
 
 	wire [3:0] reg_w;
 	wire [4:0] flagwire;
-	wire [15:0] Bus, alu_out, r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, outA, outB, B_muxed;
+	wire [15:0] alu_out, r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, outA, outB, B_muxed;
 
 	output [15:0] outBus;
 	
@@ -20,11 +20,11 @@ module instruction_decoder(instruction, reset, Clocks, outBus);
 	Fourto16decoder regEnable(opcode, A, reg_w);
 	
 	//Component modules
-	RegBank reg_bank(Bus,r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, reg_w, Clocks, reset);	
+	RegBank reg_bank(outBus,r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, reg_w, Clocks, reset);	
 	Register flags (flagwire, 1'b1, reset, Clocks, flagwire); 
 	reg_mux regA (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, A,outA);
 	reg_mux regB (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, B,outB);
-	alu_mux alumux(outB, instruction[3:0], opcode, B_muxed);
+	alu_mux alumux(outB, B, opcode, B_muxed);
 	ALU alu(outA, B_muxed, outBus, opcode, flagwire);
 
 endmodule 
