@@ -2,8 +2,8 @@ module instruction_decoder(instruction, reset, Clocks, outBus);
 	input [15:0] instruction;
 	input Clocks, reset;
 
-	wire [3:0] reg_w;
-	wire [4:0] flagwire;
+	wire [15:0] reg_w;
+	wire [15:0] flagwire;
 	wire [15:0] alu_out, r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, outA, outB, B_muxed;
 
 	output [15:0] outBus;
@@ -39,29 +39,32 @@ module Fourto16decoder(Opcode, d_in, d_out);
 	output reg [15:0] d_out;
 	parameter tmp = 16'b0000_0000_0000_0001;
 
-	always@(*) begin
+always@(*) begin
 	if (Opcode == 8'd10 || Opcode == 8'd11 || Opcode == 8'd12 || Opcode == 8'd23) //Do not enable any reg in case of CMP or NOP instruction
 		d_out = 16'd0;
 	
 	else begin
-		assign d_out = (d_in == 4'b0000) ? tmp   :
-		       (d_in == 4'b0001) ? tmp<<1:
-		       (d_in == 4'b0010) ? tmp<<2:
-		       (d_in == 4'b0011) ? tmp<<3:
-		       (d_in == 4'b0100) ? tmp<<4:
-		       (d_in == 4'b0101) ? tmp<<5:
-		       (d_in == 4'b0110) ? tmp<<6:
-		       (d_in == 4'b0111) ? tmp<<7:
-		       (d_in == 4'b1000) ? tmp<<8:
-		       (d_in == 4'b1001) ? tmp<<9:
-		       (d_in == 4'b1010) ? tmp<<10:
-		       (d_in == 4'b1011) ? tmp<<11:
-		       (d_in == 4'b1100) ? tmp<<12:
-		       (d_in == 4'b1101) ? tmp<<13:
-		       (d_in == 4'b1110) ? tmp<<14:
-		       (d_in == 4'b1111) ? tmp<<15: 16'bxxxx_xxxx_xxxx_xxxx;
-				 end
+		case (d_in)
+			4'b0000: begin d_out = tmp; end
+		   4'b0001: begin d_out = tmp<<1; end
+		   4'b0010: begin d_out = tmp<<2; end
+		   4'b0011: begin d_out = tmp<<3; end
+		   4'b0100: begin d_out = tmp<<4; end
+		   4'b0101: begin d_out = tmp<<5; end
+		   4'b0110: begin d_out = tmp<<6; end
+		   4'b0111: begin d_out = tmp<<7; end
+		   4'b1000: begin d_out = tmp<<8; end
+		   4'b1001: begin d_out = tmp<<9; end
+		   4'b1010: begin d_out = tmp<<10; end
+		   4'b1011: begin d_out = tmp<<11; end
+		   4'b1100: begin d_out = tmp<<12; end
+		   4'b1101: begin d_out = tmp<<13; end
+		   4'b1110: begin d_out = tmp<<14; end
+		   4'b1111: begin d_out = tmp<<15; end
+			default: begin d_out = 16'bxxxx_xxxx_xxxx_xxxx; end
+		endcase
 	end
+end
 
 endmodule 
 
@@ -194,7 +197,7 @@ module ALU( A, B, C, Opcode, Flags);
 input [15:0] A, B;
 input [7:0] Opcode;
 output reg [15:0] C;
-output reg [4:0] Flags; // Flags[4]-ZF Flags[3]-CF,  Flags[2]-FF, Flags[1]-LF, Flags[0]-NF
+output reg [15:0] Flags; // Flags[4]-ZF Flags[3]-CF,  Flags[2]-FF, Flags[1]-LF, Flags[0]-NF -> truncate leading bits
 
 parameter ADD    = 8'b00000000;
 parameter ADDI   = 8'b00000001;
