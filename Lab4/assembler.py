@@ -10,7 +10,9 @@ def main(args):
         ln = 1
         for line in lines:
             try:
-                converted.append(assemble(line) + '\n')
+                assembled = assemble(line)
+                converted.append(assembled + '\n')
+                print(assembled)
                 ln += 1
 
             except:
@@ -40,6 +42,7 @@ def assemble(line):
         if op != 'NOT':
             raise ValueError
 
+
         op = switch_op(op)
         Rdst = switch_reg(split[1])
         return_str = op + Rdst + '0000'
@@ -47,22 +50,40 @@ def assemble(line):
         return return_str
 
     else:
-        Rsrc = split[1][:-1]
-        Rdst = split[2]
+        imm = False
+        if op == 'ADDI' or op == 'ADDUI' or op == 'ADDCUI' or op == 'ADDCI' or op == 'SUBI' or op == 'CMPI' or op == 'LSHI' or op == 'RSHI':
+            imm = True
 
-        if len(Rsrc) > 3 or len(Rdst) > 3:
-            raise ValueError
+        if imm == True: # Case for immediate operations
+            Rsrc = split[1][:-1]
+            Rdst = split[2]
 
-        if len(Rsrc) < 3:
-            Rsrc = Rsrc[0] + '0' + Rsrc[1]
-        if len(Rdst) < 3:
-            Rdst = Rdst[0] + '0' + Rdst[1]
+            imm_val = format(int(Rsrc), 'b')
+            imm_val = imm_val.zfill(4)
 
-        op = switch_op(op)
-        Rsrc = switch_reg(Rsrc)
-        Rdst = switch_reg(Rdst)
-        
-        return op + Rdst + Rsrc 
+            op = switch_op(op)
+            Rsrc = switch_reg(Rdst)
+            Rdst = imm_val
+
+        else: # All other operations
+            Rsrc = split[1][:-1]
+            Rdst = split[2]
+
+            if len(Rsrc) > 3 or len(Rdst) > 3:
+                raise ValueError
+
+            if len(Rsrc) < 3:
+                Rsrc = Rsrc[0] + '0' + Rsrc[1]
+            if len(Rdst) < 3:
+                Rdst = Rdst[0] + '0' + Rdst[1]
+
+            op = switch_op(op)
+            Rsrc = switch_reg(Rsrc)
+            Rdst = switch_reg(Rdst)
+
+
+        val = op + Rdst + Rsrc 
+        return val 
 
 
 def switch_op(op):
