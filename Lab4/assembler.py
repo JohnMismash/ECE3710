@@ -65,8 +65,8 @@ def assemble(line):
             imm_val = imm_val.zfill(4)
 
             op = switch_op(op)
-            Rsrc = switch_reg(Rdst)
-            Rdst = imm_val
+            Rdst = switch_reg(Rdst)
+            Rsrc = imm_val
 
         else: # All other operations
             Rsrc = split[1][:-1]
