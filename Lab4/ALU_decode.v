@@ -225,6 +225,7 @@ begin
 		else
 			Flags[4] = 1'b0;
 		Flags[2:0] = 3'b000;
+		Flags[15:5] = 9'b0;
 		end
 
 	ADD:
@@ -235,6 +236,7 @@ begin
 		if( (~A[15] & ~B[15] & C[15]) | (A[15] & B[15] & ~C[15]) ) Flags[2] = 1'b1; // Checks if overflow occurred. Another way of writing it: if (a > 0 & b > 0 & c < 0 | a < 0 & b < 0 & c > 0), set overflow bit.
 		else Flags[2] = 1'b0;
 		Flags[1:0] = 2'b00; Flags[3] = 1'b0;
+		Flags[15:5] = 9'b0;
 		end
 
     ADDI:
@@ -245,6 +247,7 @@ begin
 		if( (~A[15] & ~B[15] & C[15]) | (A[15] & B[15] & ~C[15]) ) Flags[2] = 1'b1;
 		else Flags[2] = 1'b0;
 		Flags[1:0] = 2'b00; Flags[3] = 1'b0;
+		Flags[15:5] = 9'b0;
 		end
 
     ADDUI:
@@ -254,6 +257,7 @@ begin
 		if (C == 'h0) Flags[4] = 1'b1;
 		else Flags[4] = 1'b0;
 		Flags[2:0] = 3'b000;
+		Flags[15:5] = 9'b0;
 		end
 
     ADDC:
@@ -264,6 +268,7 @@ begin
 		if( (~A[15] & ~B[15] & C[15]) | (A[15] & B[15] & ~C[15]) ) Flags[2] = 1'b1;
 		else Flags[2] = 1'b0;
 		Flags[1:0] = 2'b00; Flags[3] = 1'b0;
+		Flags[15:5] = 9'b0;
 		end
 
     ADDCU:
@@ -273,6 +278,7 @@ begin
 		if (C == 'h0) Flags[4] = 1'b1;
 		else Flags[4] = 1'b0;
 		Flags[2:0] = 3'b000;
+		Flags[15:5] = 9'b0;
 		end
 
     ADDCUI:
@@ -282,6 +288,7 @@ begin
 		if (C == 'h0) Flags[4] = 1'b1;
 		else Flags[4] = 1'b0;
 		Flags[2:0] = 3'b000;
+		Flags[15:5] = 9'b0;
 		end
 
     ADDCI:
@@ -291,6 +298,7 @@ begin
 		if (C == 'h0) Flags[4] = 1'b1;
 		else Flags[4] = 1'b0;
 		Flags[2:0] = 3'b000;
+		Flags[15:5] = 9'b0;
 		end
 
 	SUB:
@@ -302,6 +310,7 @@ begin
 		else Flags[2] = 1'b0;
 
 		Flags[1:0] = 2'b00; Flags[3] = 1'b0; //Ensure Other Flags to 0
+		Flags[15:5] = 9'b0;
 		end
 
 	SUBI: //Same as SUB
@@ -312,6 +321,7 @@ begin
 		if( (~A[15] & ~B[15] & C[15]) | (A[15] & B[15] & ~C[15]) ) Flags[2] = 1'b1; //Sets the F flag
 		else Flags[2] = 1'b0;
 		Flags[1:0] = 2'b00; Flags[3] = 1'b0; //Ensure Other Flags to 0
+		Flags[15:5] = 9'b0;
 		end
 
 	CMP:
@@ -321,6 +331,7 @@ begin
 		C = 16'dx;
 		if ($signed(A) == $signed(B)) Flags[4:2] = 3'b100;
 		else Flags[4:2] = 3'b000;
+		Flags[15:5] = 9'b0;
 		end
 
 	CMPU:
@@ -330,31 +341,32 @@ begin
 		C = 16'dx;
 		if (A == B) Flags[4:2] = 3'b100;
 		else Flags[4:2] = 3'b000;
+		Flags[15:5] = 9'b0;
 		end
 
 
 	AND:
 		begin
 			C = A & B;
-			Flags = 5'd0;
+			Flags = 16'd0;
 		end
 
 	OR:
 		begin
 			C = A | B;
-			Flags = 5'dx;
+			Flags = 16'dx;
 		end
 
 	XOR:
 		begin
 		C = A ^ B;
-		Flags = 5'dx;
+		Flags = 16'dx;
 		end
 
 	NOT:
 		begin
 			C = ~A; // Output is opposite of A, either 1 or 0
-		Flags = 5'dx;
+		Flags = 16'dx;
 		end
 
   LSH:
@@ -366,7 +378,7 @@ begin
       else
         // Perform shift by 1
         C = A << 1;
-      Flags = 5'dx;
+      Flags = 16'dx;
       end
 
   LSHI:
@@ -378,7 +390,7 @@ begin
     else
       // Perform shift by 1
       C = A << 1;
-    Flags = 5'dx;
+    Flags = 16'dx;
     end
 
   ARSH:
@@ -390,7 +402,7 @@ begin
     else
       // Perform shift by 1
       C = A >>> 1; // Sign extended
-    Flags = 5'dx;
+    Flags = 16'dx;
     end
 
   ALSH:
@@ -402,7 +414,7 @@ begin
     else
       // Perform shift by 1
       C =A << 1; // Sign extended
-	Flags = 5'dx;
+	Flags = 16'dx;
     end
 
   RSH:
@@ -414,8 +426,9 @@ begin
     else
       // Perform shift by 1
       C = A >> 1; // logical extended
-	Flags = 5'dx;
+	Flags = 16'dx;
     end
+  
   RSHI:
     begin
     if (B > 0)
@@ -425,21 +438,21 @@ begin
     else
       // Perform shift by 1
       C = A >>> 1; // Sign extended
-	Flags = 5'dx;
+	Flags = 16'dx;
     end
 
   NOP:
     begin
    	//do nothing
 		C = 16'dx;
-		Flags = 5'dx;
+		Flags = 16'dx;
 
     end
 
 	default:
 		begin
 			C = 16'b0000;
-			Flags = 5'b00000;
+			Flags = 16'b00000;
 		end
 	endcase
 end
