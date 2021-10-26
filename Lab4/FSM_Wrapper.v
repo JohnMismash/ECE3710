@@ -1,32 +1,49 @@
 module FSM_Wrapper(Clock, Reset);
 
-  wire [15:0] program_no;
-  wire dataB;
-  wire enableB;
+	input wire Clock, Reset;
 
-  output wire [15:0] instruction_out;
-  output wire [4:0] outputB;
-  output wire [15:0] decoder_output;
-  output wire []
-  wire [3:0] immediate_value;
+	//These are the FSM outputs
+	wire prgEnable;
+  
+  //Program Counter Hookup
+	wire [8:0] program_no;
+  
+  //Memory Hookup
+	wire [15:0] outputB;
 
-  initial program_no = 0;
+	//This is the ALU/Reg Computation Hookups
+	wire [15:0] instruction_out;
+	wire [15:0] decoder_output;
+	
+	
+	
+	program_counter PC(.Enable(prgEnable), .Reset(Reset), .program_no(program_no));
+	
+	/*No data on port A since we wont write anything
+	Data B decoder_output is output from ALU C wire
+	program_no is the program number address which instruction to output
+	0 for addr_b since we do not care at the moment of load and store
+	likewise for wr_enable A and B
+	instruction_out puts out the 16 bit opcode instruction
+	output B is a placeholder for the future*/
+	true_dual_port_ram_single_clock(10'dx, decoder_output, program_no, 0, 0, 0, Clock, instruction_out, outputB); 
+  
+	instruction_decoder ALU_decoder(.instruction(instruction_out), .reset(Reset), .Clocks(Clock), .outBus(decoder_output));
 
-  program_counter PC(Clock, Reset, program_no);
-  doublemem instructions_mem(0, 0, program_no, addressB, 0, enableB, Clock,
-                  instruction_out, 0);
-
-  instruction_decoder ALU_decoder(instruction_out, Clock, Reset, decoder_output);
-
-  FSM myfsm(Clock, Reset, )
-
-
+	FSM myfsm(Clock, Reset, prgEnable);
+  
+  
+  
 endmodule
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-module FSM (clock, Reset, output);
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+module FSM (clock, Reset, programCountEnable);
 
 	input clock, Reset;
+	output reg programCountEnable;
 
 	parameter S0=4'd0, S1=4'd1, S2=4'd2, S3=4'd3, S4=4'd4;
 	parameter S5=4'd5, S6=4'd6, S7=4'd7, S8=4'd8, S9=4'd9;
@@ -71,9 +88,58 @@ module FSM (clock, Reset, output);
 	// Output relies only on current state
 	always@(states)begin
 	  case (states)
-
+			S1: begin programCountEnable <= 0;
 	  endcase
 	end
 
+endmodule 
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Quartus Prime Verilog Template
+// True Dual Port RAM with single clock
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+module true_dual_port_ram_single_clock
+#(parameter DATA_WIDTH=16, parameter ADDR_WIDTH=16, parameter file = "C:/Users/Owner/Documents/ECE3710/initialize.txt")
+(
+	input [(DATA_WIDTH-1):0] data_a, data_b,
+	input [(ADDR_WIDTH-1):0] addr_a, addr_b, 
+	input we_a, we_b, clk,
+	output reg [(DATA_WIDTH-1):0] q_a, q_b
+);
+
+	// Declare the RAM variable
+	reg [DATA_WIDTH-1:0] ram[2**ADDR_WIDTH-1:0];
+
+	initial //Initializes some memory
+	begin
+	
+	$readmemh(file, ram);
+	
+	end
+
+	// Port A 
+	always @ (posedge clk)begin
+	
+		q_a <= ram[addr_a];
+		
+	end 
+
+	// Port B 
+	always @ (posedge clk)
+	begin
+		if (we_b) 
+			if(addr_b >= 2**10)
+			begin
+				ram[addr_b] <= data_b;
+				q_b <= data_b;
+			end
+		
+		else 
+		begin
+			q_b <= ram[addr_b];
+		end 
+	end
 
 endmodule
