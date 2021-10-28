@@ -43,6 +43,25 @@ class TestAssemblerMethods(unittest.TestCase):
         with self.assertRaises(ValueError):
             assemble(s2)
 
+    def test_assemble_add(self):
+        s1 = 'ADD R0, R1'
+
+        expected = '0000000000010000'
+        self.assertEqual(expected, assemble(s1))
+
+    def test_assemble_addi(self):
+        s1 = 'ADDI 5, R0'
+
+        expected = '0000000100000101'
+
+        self.assertEqual(expected, assemble(s1))
+
+    def test_basic_sub(self):
+        s1 = 'SUB R0, R1'
+
+        expected = '0000100000010000'
+
+        self.assertEqual(expected, assemble(s1))
 
     def test_assemble_imm(self):
         op_dict = {
@@ -97,7 +116,7 @@ class TestAssemblerMethods(unittest.TestCase):
             for imm in imm_dict:
                 for Rdst in Rdst_dict:
                     input_string = op + ' ' + imm + ' ' +  Rdst
-                    correct_answer = op_dict[op] + imm_dict[imm] + Rdst_dict[Rdst]
+                    correct_answer = op_dict[op] + Rdst_dict[Rdst] + imm_dict[imm] 
 
                     answer = assemble(input_string)
                     self.assertEqual(correct_answer, answer)

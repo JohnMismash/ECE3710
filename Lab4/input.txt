@@ -1,3 +1,1 @@
-ADD R0, R1
-ADDI 5, R1
-SUB R4, R3
+SUB R0, R1

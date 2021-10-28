@@ -65,8 +65,8 @@ def assemble(line):
             imm_val = imm_val.zfill(4)
 
             op = switch_op(op)
-            Rdst = switch_reg(Rdst)
-            Rsrc = imm_val
+            A = switch_reg(Rdst)
+            B = imm_val
 
         else: # All other operations
             Rsrc = split[1][:-1]
@@ -81,11 +81,11 @@ def assemble(line):
                 Rdst = Rdst[0] + '0' + Rdst[1]
 
             op = switch_op(op)
-            Rsrc = switch_reg(Rsrc)
-            Rdst = switch_reg(Rdst)
+            A = switch_reg(Rdst)
+            B = switch_reg(Rsrc)
 
 
-        val = op + Rdst + Rsrc
+        val = op + A + B
         return val
 
 
@@ -161,6 +161,16 @@ def switch_op(op):
 
     elif op == 'NOP':
         return '00010111'
+
+    elif op == 'JMP' or op == 'JUMP':
+        return '00011000'
+
+    elif op == 'LOAD':
+        return '00011001'
+
+    elif op == 'STOR' or op == 'STORE':
+        return '00011010'
+
     else:
         raise ValueError
 
