@@ -166,10 +166,10 @@ def switch_op(op):
         return '00011000'
 
     elif op == 'LOAD':
-        return '00011001'
+        return '10011001'
 
     elif op == 'STOR' or op == 'STORE':
-        return '00011010'
+        return '11011010'
 
     else:
         raise ValueError
