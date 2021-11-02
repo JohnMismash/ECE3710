@@ -5,11 +5,11 @@ module FSM_StoreLoad(Clock, Reset, instruction_out);//, out0, out1, out2, out3);
 
 	//These are the FSM outputs
 	wire prgEnable;
-	
-  
+
+
   //Program Counter Hookup
 	wire [11:0] program_no;
-  
+
   //Memory Hookup
 	wire [15:0] outputB, addr_reg, store_val_reg;
 	wire [11:0] store_addr;
@@ -18,15 +18,15 @@ module FSM_StoreLoad(Clock, Reset, instruction_out);//, out0, out1, out2, out3);
 	//This is the ALU/Reg Computation Hookups
 	output wire [15:0] instruction_out;
 	wire [15:0] decoder_output;
-	
+
 	/*hexTo7Seg blockdata1(decoder_output[3:0], out0);
 	hexTo7Seg blockdata2(decoder_output[7:4], out1);
 	hexTo7Seg blockdata3(decoder_output[11:8], out2);
 	hexTo7Seg blockdata4(decoder_output[15:12], out3);*/
-	
-	
+
+
 	program_counter PC(.Enable(prgEnable), .Reset(Reset), .program_no(program_no));
-	
+
 	/*No data on port A since we wont write anything
 	Data B decoder_output is output from ALU C wire
 	program_no is the program number address which instruction to output
@@ -34,14 +34,14 @@ module FSM_StoreLoad(Clock, Reset, instruction_out);//, out0, out1, out2, out3);
 	likewise for wr_enable A and B
 	instruction_out puts out the 16 bit opcode instruction
 	output B is a placeholder for the future*/
-	true_dual_port_ram_single_clock mem(16'dx, store_val_reg, program_no, store_addr, 1'b0, mem_enable, prgEnable, instruction_out, outputB); 
-  
+	true_dual_port_ram_single_clock mem(16'dx, store_val_reg, program_no, store_addr, 1'b0, mem_enable, prgEnable, instruction_out, outputB);
+
 	register_mod ALU_decoder(.instruction(instruction_out), .reset(Reset), .Clocks(prgEnable), .outBus(decoder_output), .outA(addr_reg), .outB(store_val_reg));
 
 	FSM myfsm(Clock, Reset, prgEnable);
-  
+
 	mem_mux store(instruction_out[15:14], addr_reg[11:0], store_addr, mem_enable);
-  
+
 endmodule
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -102,10 +102,10 @@ module FSM (clock, Reset, programCountEnable);
 	  endcase
 	end
 
-endmodule 
+endmodule
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 // Mux for the memory module for accessing addresses
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 module mem_mux(instr_code, addr, fetch_addr, enable);
@@ -115,14 +115,14 @@ output reg [11:0] fetch_addr;
 output reg enable; //Enables write to the memory
 
 always@(*)begin
-	if(instr_code == 2'b11)begin //Let the 2 MSB be equal to 11 indicating a store instruction
+	if(instr_code == 2'b11)begin // Let the 2 MSB be equal to 11 indicating a store instruction
 		fetch_addr = addr;
 		enable = 1; end
 	else begin
 		fetch_addr = 12'bx;
 		enable = 0; end
 end
-endmodule 
+endmodule
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Quartus Prime Verilog Template
 // True Dual Port RAM with single clock
@@ -142,36 +142,36 @@ module true_dual_port_ram_single_clock
 
 	initial //Initializes some memory
 	begin
-	
+
 	$readmemb(file, ram);
-	
+
 	end
 
-	// Port A 
+	// Port A
 	always @ (posedge clk)begin
-	
+
 		if(addr_a < 2**11) //We can store the instructions in the first 2**11 words of memory
 			q_a <= ram[addr_a];
-		
-	end 
 
-	// Port B 
+	end
+
+	// Port B
 	always @ (posedge clk)
 	begin
 		/*if(addr_b == 12'bz)begin
 			q_b <= 16'bz; end*/
-			
-	   if (we_b) 
+
+	   if (we_b)
 			//if(addr_b >= 2**11) //Store data values in memory after the 2**11 block
 			begin
 				ram[addr_b] <= data_b;
 				q_b <= data_b;
 			end
-		
-		else 
+
+		else
 		begin
 			q_b <= ram[addr_b];
-		end 
+		end
 	end
 
 endmodule
@@ -209,9 +209,9 @@ case(x)
 	z = ~7'b1011110;
 	4'b1110 : 			//Hexadecimal E
 	z = ~7'b1111001;
-	4'b1111 : 			//Hexadecimal F	
-	z = ~7'b1110001; 
+	4'b1111 : 			//Hexadecimal F
+	z = ~7'b1110001;
    default :
 	z = ~7'b0000000;
 endcase
-endmodule 
+endmodule
