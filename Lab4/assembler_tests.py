@@ -62,6 +62,22 @@ class TestAssemblerMethods(unittest.TestCase):
         expected = '0000100000010000'
 
         self.assertEqual(expected, assemble(s1))
+        
+        
+    def test_basic_store(self):
+        s1 = 'STOR R0, R1'
+
+        expected = '11011010' + '0001' + '0000'
+
+        self.assertEqual(expected, assemble(s1))
+
+    def test_basic_load(self):
+        s1 = 'LOAD R1, R0'
+
+        expected = '10011001' + '0000' + '0001'
+
+        self.assertEqual(expected, assemble(s1))
+
 
     def test_assemble_imm(self):
         op_dict = {
