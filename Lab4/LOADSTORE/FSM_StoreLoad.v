@@ -7,15 +7,15 @@ module FSM_StoreLoad(Clock, Reset, instruction_out);//, out0, out1, out2, out3);
 	wire prgEnable;
 
 
-  //Program Counter Hookup
+  // Program Counter Hookup
 	wire [11:0] program_no;
 
-  //Memory Hookup
+  // Memory Hookup
 	wire [15:0] outputB, addr_reg, store_val_reg;
 	wire [11:0] store_addr;
 	wire mem_enable;
 
-	//This is the ALU/Reg Computation Hookups
+	// This is the ALU/Reg Computation Hookups
 	output wire [15:0] instruction_out;
 	wire [15:0] decoder_output;
 
@@ -123,6 +123,7 @@ always@(*)begin
 		enable = 0; end
 end
 endmodule
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Quartus Prime Verilog Template
 // True Dual Port RAM with single clock
