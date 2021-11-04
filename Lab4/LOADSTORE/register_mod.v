@@ -1,10 +1,11 @@
-module register_mod(instruction, reset, Clocks, outBus, outA, outB);
-	input [15:0] instruction;
+module register_mod(instruction, reset, Clocks, mem_data_in, outBus, outA, outB);
+	input [15:0] instruction, mem_data_in;
 	input Clocks, reset;
 
 	wire [15:0] reg_w;
 	wire [15:0] flagwire;
-	wire [15:0] alu_out, r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15,  B_muxed;
+	wire [3:0] reg_enable_decoder;
+	wire [15:0] alu_out, r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15,  B_muxed, alu_output;
 
 	output [15:0] outBus, outA, outB;
 	
@@ -17,7 +18,8 @@ module register_mod(instruction, reset, Clocks, outBus, outA, outB);
 		B = instruction[3:0];
 	end
 
-	Fourto16decoder regEnable(opcode, A, reg_w);
+	Decoder_mux decode(opcode, A, B, reg_enable_decoder); 
+	Fourto16decoder regEnable(opcode, reg_enable_decoder, reg_w);
 	
 	//Component modules
 	RegBank reg_bank(outBus,r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, reg_w, Clocks, reset);	
@@ -25,7 +27,8 @@ module register_mod(instruction, reset, Clocks, outBus, outA, outB);
 	reg_mux regA (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, A,outA);
 	reg_mux regB (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, B,outB);
 	alu_mux alumux(outB, B, opcode, B_muxed);
-	ALU alu(outA, B_muxed, outBus, opcode, flagwire);
+	ALU alu(outA, B_muxed, alu_output, opcode, flagwire);
+	load_mux load(opcode, mem_data_in, alu_output, outBus);
 
 endmodule 
 
@@ -38,11 +41,19 @@ module Fourto16decoder(Opcode, d_in, d_out);
 	input [7:0] Opcode;
 	output reg [15:0] d_out;
 	parameter tmp = 16'b0000_0000_0000_0001;
+	parameter NOP    = 8'b00010111;
+	parameter STORE  = 8'b11011010;
+	parameter LOAD   = 8'b10011001;
+	parameter CMP    = 8'b00001010;
+	parameter CMPI   = 8'b00001011;
+	parameter CMPU   = 8'b00001100;
 
 always@(*) begin
-	if (Opcode == 8'd10 || Opcode == 8'd11 || Opcode == 8'd12 || Opcode == 8'd23) //Do not enable any reg in case of CMP or NOP instruction
+	if (Opcode == CMP || Opcode == CMPI || Opcode == CMPU || Opcode == NOP) //Do not enable any reg in case of CMP or NOP instruction
 		d_out = 16'd0;
-	
+	else if (Opcode == STORE || Opcode == 8'bx) //do not enable for store instruction
+		d_out = 16'd0;
+		
 	else begin
 		case (d_in)
 			4'b0000: begin d_out = tmp; end
@@ -109,12 +120,12 @@ module alu_mux(reg_val, imm_val, op_control, out);
 	input [3:0] imm_val;
 	input [7:0] op_control;
 	output reg [15:0] out;
+
 	
-	always @(*)begin//If op_control is equal to any immediate instructions
-	if (op_control == 8'b00000001 /*ADDI*/||  op_control == 8'b00000111 /*ADDCI*/) begin
-			out = $signed(imm_val); end
-			
-	else if(op_control == 8'b00000011 /*ADDUI*/ || op_control == 8'b00000110 /*ADDCUI*/|| op_control == 8'b00001001 /*SUBI*/||op_control == 8'b00010010 /*LSHI*/||op_control ==  8'b00010100 /*RSHI*/)begin
+	always @(*)begin//If op_control is equal t store or immediate instructions, output those
+	if (op_control == 8'b00000001 /*ADDI*/||  op_control == 8'b00000111 /*ADDCI*/)
+		out = $signed(imm_val);
+	else if (op_control == 8'b00000011 /*ADDUI*/ || op_control == 8'b00000110 /*ADDCUI*/|| op_control == 8'b00001001 /*SUBI*/||op_control == 8'b00010010 /*LSHI*/||op_control ==  8'b00010100 /*RSHI*/) begin
 			out = $unsigned(imm_val); end
 			
 	else begin
@@ -122,7 +133,45 @@ module alu_mux(reg_val, imm_val, op_control, out);
 	end
 		
 endmodule
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Mux for the decoder to write to register
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+module Decoder_mux(instr_code, enableA, enableB, ABEnable);
+input [7:0] instr_code;
+input [3:0] enableA, enableB;
+output reg [3:0] ABEnable;
+parameter STORE  = 8'b11011010;
+parameter LOAD   = 8'b10011001;
+
+always@(*)begin
+	if(instr_code == LOAD) //Let the 2 MSB be equal to 10 indicating a load instruction. enable B register
+		ABEnable = enableB;	
+	else
+		ABEnable = enableA;  //Otherwise enable A register as normal
+	
+end
+endmodule 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Mux for the Loading in immediate value or value from dataB from memory
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+module load_mux(instr_code, mem_data, alu_output, c_output);
+input [7:0] instr_code;
+input [15:0] mem_data;
+input [15:0] alu_output;
+output reg [15:0] c_output;
+
+always@(*)begin
+	if(instr_code [7:6] == 2'b10) //Let the 2 MSB be equal to 10 indicating a load instruction. Load data from memory
+		c_output = mem_data;
+			
+	else
+		c_output = alu_output;  //If it is not an immediate or store instruction, outputs undefined
+	
+end
+endmodule 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -227,6 +276,7 @@ parameter ALSH   = 8'b00010101;
 parameter ARSH   = 8'b00010110;
 parameter NOP    = 8'b00010111;
 parameter STORE  = 8'b11011010;
+parameter LOAD   = 8'b10011001;
 
 always @(A, B, Opcode)
 begin
@@ -469,7 +519,12 @@ begin
 		 C = 16'dx;
 		 Flags = 16'dx;		
 		end
-
+	
+	LOAD:
+		begin
+		 C = B;
+		 Flags = 16'dx;
+		end
 	default:
 		begin
 			C = 16'b0000;
