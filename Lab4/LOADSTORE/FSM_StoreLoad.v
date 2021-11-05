@@ -4,7 +4,7 @@ module FSM_StoreLoad(Clock, Reset, instruction_out);//, out0, out1, out2, out3);
 	//output wire [6:0] out0, out2, out3, out1;
 
 	//These are the FSM outputs
-	wire prgEnable;
+	wire prgEnable, ls_ctrl;
 	
   
   //Program Counter Hookup
@@ -34,12 +34,12 @@ module FSM_StoreLoad(Clock, Reset, instruction_out);//, out0, out1, out2, out3);
 	likewise for wr_enable A and B
 	instruction_out puts out the 16 bit opcode instruction
 	output B is a placeholder for the future*/
-	true_dual_port_ram_single_clock mem(.data_a(store_val_reg), .data_b(16'bx), .addr_a(store_addr), .addr_b(16'bx)
+	true_dual_port_ram_single_clock mem(.data_a(store_val_reg), .data_b(16'bx), .addr_a(store_addr), .addr_b(12'bx)
 	, .we_a(mem_enable), .we_b(1'b0), .clk(Clock), .q_a(instruction_out), .q_b(outputB)); 
   
 	register_mod ALU_decoder(.instruction(fsm_instruction), .reset(Reset), .Clocks(Clock), .mem_data_in(outputB), .outBus(decoder_output), .outA(addr_reg), .outB(store_val_reg));
 
-	FSM myfsm(Clock, Reset, instruction_out, prgEnable, fsm_instruction, mem_enable);
+	FSM myfsm(Clock, Reset, instruction_out, prgEnable, fsm_instruction, mem_enable, ls_contrl);
   
 	mem_mux store(ls_contrl, program_no, addr_reg[11:0], store_addr);
   
@@ -104,24 +104,23 @@ module FSM (clock, Reset, instruction, programCountEnable, out_instruction, mem_
 	// Present State becomes Next State
 	always@(S)begin
 			if(S == S0) states=S1; //Takes instruction
-			if(instruction == NOP) states = S0; 
-			if(S == S1 && (instruction != LOAD && instruction != STORE)) //&& instruction != JUMP
+			else if(instruction[15:8] == NOP) states = S7; 
+			else if(S == S1 && instruction[15:8] != LOAD && instruction[15:8] != STORE) //&& instruction != JUMP
 				states = S2;
-			if(S == S1 && instruction == STORE)
+			else if(S == S1 && instruction[15:8] == STORE)
 				states = S3;
-//			S2: states=S2;
-//						S3: states=S4;
-//						S4: states=S5;
-//						S5: states=S6;
-//						S6: states=S7;
-//						S7: states=S8;
-//						S8: states=S9;
-//						S9: states=S10;
-//						S10: states=S11;
-//						S11: states=S12;
-//						S12: states=S13;
-//						S13: states=S13;
-//						S14: states=S14;
+			else if(S == S1 && instruction[15:8] == LOAD)
+				states = S4;
+			else if(S == S4)
+				states = S5;
+			else if(S == S2 || S == S3)
+				states = S0;
+			else if(S == S7)
+				states = S0;
+			else 
+				states = states; //This should never occur
+				
+			
 //						default: states = 4'd15;
 		
 	end
@@ -132,7 +131,10 @@ module FSM (clock, Reset, instruction, programCountEnable, out_instruction, mem_
 			S0: begin programCountEnable <= 0; out_instruction <= 16'bx; mem_enable <= 0; mem_addrA_ctrl <= 1; end //fetches instruction
 			S1: begin programCountEnable <= 0; out_instruction <= 16'bx; mem_enable <= 0; mem_addrA_ctrl <= 1;end //Decode instruction
 			S2: begin programCountEnable <= 1; out_instruction <= instruction; mem_enable <= 0; mem_addrA_ctrl <=1; end //Execute R instruction
-
+			S3: begin programCountEnable <= 1; out_instruction <= instruction; mem_enable <= 1; mem_addrA_ctrl <= 0; end //Execute Store instruction
+			S4: begin programCountEnable <= 0; out_instruction <= instruction; mem_enable <= 0; mem_addrA_ctrl <= 1; end //Load address label to memory
+			S5: begin programCountEnable <= 1; out_instruction <= instruction; mem_enable <= 0; mem_addrA_ctrl <= 1; end //Load data to register
+			S7: begin programCountEnable <= 1; out_instruction <= 16'bx; mem_enable <= 0; mem_addrA_ctrl <= 1;end //NOP instruction
 	  endcase
 	end
 
