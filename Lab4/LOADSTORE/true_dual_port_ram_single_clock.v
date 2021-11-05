@@ -24,8 +24,12 @@ module true_dual_port_ram_single_clock
 
 	// Port A 
 	always @ (posedge clk)begin
-	
-		if(addr_a < 2**11) //We can store the instructions in the first 2**11 words of memory
+		if(we_a)begin
+			//Maybe make an address constraint here
+			ram[addr_a] <= data_a;
+			q_a <= data_a;
+			end
+		else //We can store the instructions in the first 2**11 words of memory
 			q_a <= ram[addr_a];
 		
 	end 
@@ -33,11 +37,11 @@ module true_dual_port_ram_single_clock
 	// Port B 
 	always @ (posedge clk)
 	begin
-		/*if(addr_b == 12'bz)begin
-			q_b <= 16'bz; end*/
+		if(addr_b == 12'bx)begin
+			q_b <= 16'bx; end
 			
 	   if (we_b) 
-			//if(addr_b >= 2**11) //Store data values in memory after the 2**11 block
+			if(addr_b >= 2**11) //Store data values in memory after the 2**11 block
 			begin
 				ram[addr_b] <= data_b;
 				q_b <= data_b;
