@@ -118,7 +118,7 @@ module FSM (clock, Reset, instruction, programCountEnable, out_instruction, mem_
 			else if(S == S7)
 				states = S0;
 			else 
-				states = states; //This should never occur
+				states = S0; //This should never occur
 				
 			
 //						default: states = 4'd15;
@@ -128,13 +128,13 @@ module FSM (clock, Reset, instruction, programCountEnable, out_instruction, mem_
 	// Output relies only on current state
 	always@(states)begin
 	  case (states)
-			S0: begin programCountEnable <= 0; out_instruction <= 16'bx; mem_enable <= 0; mem_addrA_ctrl <= 1; end //fetches instruction
-			S1: begin programCountEnable <= 0; out_instruction <= 16'bx; mem_enable <= 0; mem_addrA_ctrl <= 1;end //Decode instruction
-			S2: begin programCountEnable <= 1; out_instruction <= instruction; mem_enable <= 0; mem_addrA_ctrl <=1; end //Execute R instruction
-			S3: begin programCountEnable <= 1; out_instruction <= instruction; mem_enable <= 1; mem_addrA_ctrl <= 0; end //Execute Store instruction
-			S4: begin programCountEnable <= 0; out_instruction <= instruction; mem_enable <= 0; mem_addrA_ctrl <= 1; end //Load address label to memory
-			S5: begin programCountEnable <= 1; out_instruction <= instruction; mem_enable <= 0; mem_addrA_ctrl <= 1; end //Load data to register
-			S7: begin programCountEnable <= 1; out_instruction <= 16'bx; mem_enable <= 0; mem_addrA_ctrl <= 1;end //NOP instruction
+			S0: begin programCountEnable = 0; out_instruction = 16'bx; mem_enable = 0; mem_addrA_ctrl = 1; end //fetches instruction
+			S1: begin programCountEnable = 0; out_instruction = 16'bx; mem_enable = 0; mem_addrA_ctrl = 1;end //Decode instruction
+			S2: begin programCountEnable = 1; out_instruction = instruction; mem_enable = 0; mem_addrA_ctrl =1; end //Execute R instruction
+			S3: begin programCountEnable = 1; out_instruction = instruction; mem_enable = 1; mem_addrA_ctrl = 0; end //Execute Store instruction
+			S4: begin programCountEnable = 0; out_instruction = instruction; mem_enable = 0; mem_addrA_ctrl = 1; end //Load address label to memory
+			S5: begin programCountEnable = 1; out_instruction = instruction; mem_enable = 0; mem_addrA_ctrl = 1; end //Load data to register
+			S7: begin programCountEnable = 1; out_instruction = 16'bx; mem_enable = 0; mem_addrA_ctrl = 1;end //NOP instruction
 	  endcase
 	end
 
