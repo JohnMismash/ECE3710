@@ -23,7 +23,7 @@ p.init()
 
 # Loads all images respective to each square size.
 def load_images():
-    piece_images = ['RC', 'BC', 'YC']
+    piece_images = ['RP', 'YP', 'BC']
 
     for piece in piece_images:
         IMAGES[piece] = 0
@@ -32,6 +32,8 @@ def load_images():
 def main():
     # Creates a console with the specific width and height.
     console = p.display.set_mode((WIDTH, HEIGHT))
+
+    print("hello")
 
     # Create a clock that will run to check for events.
     game_clock = p.time.Clock()
