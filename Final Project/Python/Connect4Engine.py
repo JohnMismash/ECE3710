@@ -6,7 +6,7 @@ import pygame as p
 # Width/Height of the entire game.
 WIDTH = HEIGHT = 512
 
-# Dimension of the
+# Dimension of the board.
 DIMENSION = 7
 
 # Each individual square size.
