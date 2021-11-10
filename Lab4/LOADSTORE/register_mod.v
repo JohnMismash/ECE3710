@@ -1,9 +1,9 @@
-module register_mod(instruction, reset, Clocks, mem_data_in, outBus, outA, outB, ren, load_mux);
+module register_mod(instruction, reset, Clocks, mem_data_in, outBus, outA, outB, ren, load_mux, flagwire);
 	input [15:0] instruction, mem_data_in;
 	input Clocks, reset, ren, load_mux;
 
 	wire [15:0] reg_w;
-	wire [15:0] flagwire;
+	output wire [15:0] flagwire;
 	wire [3:0] reg_enable_decoder;
 	wire [15:0] alu_out, r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15,  B_muxed, alu_output;
 
@@ -23,7 +23,7 @@ module register_mod(instruction, reset, Clocks, mem_data_in, outBus, outA, outB,
 	
 	//Component modules
 	RegBank reg_bank(outBus,r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, reg_w, Clocks, reset);	
-	Register flags (flagwire, 1'b1, reset, Clocks, flagwire); 
+	//Register flags (flagwire, 1'b1, reset, Clocks, flagwire); 
 	reg_mux regA (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, A,outA);
 	reg_mux regB (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, B,outB);
 	alu_mux alumux(outB, B, opcode, B_muxed);
@@ -53,7 +53,7 @@ always@(*) begin
 
 	if (ren) begin
 		
-		if (Opcode == CMP || Opcode == CMPI || Opcode == CMPU) begin// || Opcode == NOP) //Do not enable any reg in case of CMP or NOP instruction
+		if (Opcode == CMP || Opcode == CMPI || Opcode == CMPU) begin //Do not enable any reg in case of CMP or NOP instruction
 			d_out = 16'd0; end
 		
 		else begin
@@ -130,7 +130,7 @@ module alu_mux(reg_val, imm_val, op_control, out);
 
 	
 	always @(*)begin//If op_control is equal t store or immediate instructions, output those
-	if (op_control == 8'b00000001 /*ADDI*/||  op_control == 8'b00000111 /*ADDCI*/)
+	if (op_control == 8'b00000001 /*ADDI*/||  op_control == 8'b00000111 /*ADDCI*/ || op_control == 8'b00001011 /*CMPI*/)
 		out = $signed(imm_val);
 	else if (op_control == 8'b00000011 /*ADDUI*/ || op_control == 8'b00000110 /*ADDCUI*/|| op_control == 8'b00001001 /*SUBI*/||op_control == 8'b00010010 /*LSHI*/||op_control ==  8'b00010100 /*RSHI*/) begin
 			out = $unsigned(imm_val); end
@@ -397,10 +397,10 @@ begin
 		Flags[15:5] = 9'b0;
 		end
 		
-	CMP:
+	CMP: // Flags[4]-ZF Flags[3]-CF,  Flags[2]-FF, Flags[1]-LF, Flags[0]-NF
 		begin
-		if( $signed(A) < $signed(B) ) Flags[1:0] = 2'b11;
-		else Flags[1:0] = 2'b00;
+		if( $signed(A) < $signed(B) ) Flags[1:0] = 2'b00; //A is less than b so number is not negative or lower than 0
+		else Flags[1:0] = 2'b11;
 		C = 16'dx;
 		if ($signed(A) == $signed(B)) Flags[4:2] = 3'b100;
 		else Flags[4:2] = 3'b000;
@@ -409,15 +409,25 @@ begin
 
 	CMPU:
 		begin
-		if ( A < B ) Flags[1:0] = 2'b10; // A is Rdest, B is Rsrc
-		else Flags[1:0] = 2'b00;
+		if ( A < B ) Flags[1:0] = 2'b00; // A is Rdest, B is Rsrc
+		else Flags[1:0] = 2'b10;
 		C = 16'dx;
 		if (A == B) Flags[4:2] = 3'b100;
 		else Flags[4:2] = 3'b000;
 		Flags[15:5] = 9'b0;
 		end
 
-
+	
+	CMPI:
+		begin
+		if ( A < B ) Flags[1:0] = 2'b00; // A is Rdest, B is Immediate value
+		else Flags[1:0] = 2'b10;
+		C = 16'dx;
+		if (A == B) Flags[4:2] = 3'b100;
+		else Flags[4:2] = 3'b000;
+		Flags[15:5] = 9'b0;
+		end
+		
 	AND:
 		begin
 			C = A & B;
@@ -533,12 +543,15 @@ begin
 		 C = B;
 		 Flags = 16'dx;
 		end
+	
 	default:
 		begin
 			C = 16'b0000;
 			Flags = 16'b00000;
 		end
+		
 	endcase
 end
 
 endmodule
+
