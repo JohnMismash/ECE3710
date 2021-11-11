@@ -79,17 +79,70 @@ class TestAssemblerMethods(unittest.TestCase):
         self.assertEqual(expected, assemble(s1))
 
 
-    def test_basic_store(self):
-        s1 = 'STOR R0, R1'
+    def test_basic_jump(self):
+        s1 = "JUMP 10" 
 
-        expected = '11011010' + '0001' + '0000'
+        expected = '01000000' + '00001010'  
 
         self.assertEqual(expected, assemble(s1))
 
-    def test_basic_load(self):
-        s1 = 'LOAD R1, R0'
 
-        expected = '10011001' + '0000' + '0001'
+    def test_jump_max(self):
+        s1 = "JUMP 127" 
+
+        expected = '01000000' + '01111111'  
+
+        self.assertEqual(expected, assemble(s1))
+
+    def test_basic_jump_neg(self):
+        s1 = "JUMP -19" 
+        
+        expected = '01000000' + '11101101'  
+
+        self.assertEqual(expected, assemble(s1))
+
+    def test_basic_jl_neg(self):
+        s1 = "JL -5" 
+
+        # 5 = 0000 0101
+        #-5 = 1111 1011
+        expected = '01000001' + '11111011'
+
+        self.assertEqual(expected, assemble(s1))
+
+    def test_basic_jl_neg_even(self):
+        s1 = "JL -6" 
+    
+        # 6 = 0000 0110
+        #-6 = 1111 1010
+        expected = '01000001' + '11111010'
+
+        self.assertEqual(expected, assemble(s1))
+
+    def test_basic_jl_big_neg(self):
+        s1 = "JL -124" 
+
+        # 124 = 0111 1100
+        #-124 = 1000 0100
+        expected = '01000001' + '10000100'
+
+        self.assertEqual(expected, assemble(s1))
+
+    def test_basic_jl_big_neg2(self):
+        s1 = "JL -127" 
+
+        # 127 = 0111 1111
+        #-124 = 1000 0001
+        expected = '01000001' + '10000001'
+
+        self.assertEqual(expected, assemble(s1))
+
+    def test_basic_jl_neg_max(self):
+        s1 = "JL -128" 
+
+        # 128 = N/A
+        #-128 = 1000 0000
+        expected = '01000001' + '10000000'
 
         self.assertEqual(expected, assemble(s1))
 
