@@ -1,17 +1,18 @@
-module FSM_StoreLoad(Clock, Reset, instruction_out);//, out0, out1, out2, out3);
+module FSM_StoreLoad(Clock, Reset, instruction_out);//out0, out1, out2, out3);
 
 	input wire Clock, Reset;
 	//output wire [6:0] out0, out2, out3, out1;
 
 	//These are the FSM outputs
-	wire prgEnable, ls_ctrl, reg_enable, load_mux_ctrl;
+	wire prgEnable, ls_ctrl, reg_enable, load_mux_ctrl, prgrm_incr_select;
 	
   
   //Program Counter Hookup
 	wire [11:0] program_no;
+	wire [7:0]  FSM_increase, increaser;
   
   //Memory Hookup
-	wire [15:0] outputB, addr_reg, store_val_reg, fsm_instruction;
+	wire [15:0] outputB, addr_reg, store_val_reg, fsm_instruction, flagg;
 	wire [11:0] store_addr;
 	wire mem_enable;
 
@@ -19,30 +20,33 @@ module FSM_StoreLoad(Clock, Reset, instruction_out);//, out0, out1, out2, out3);
 	output wire [15:0] instruction_out;
 	wire [15:0] decoder_output;
 	
-	/*hexTo7Seg blockdata1(decoder_output[3:0], out0);
-	hexTo7Seg blockdata2(decoder_output[7:4], out1);
-	hexTo7Seg blockdata3(decoder_output[11:8], out2);
-	hexTo7Seg blockdata4(decoder_output[15:12], out3);*/
+	/*hexTo7Seg blockdata1(instruction_out[3:0], out0);
+	hexTo7Seg blockdata2(instruction_out[7:4], out1);
+	hexTo7Seg blockdata3(instruction_out[11:8], out2);
+	hexTo7Seg blockdata4(instruction_out[15:12], out3);*/
 	
+	program_counter_increaser jmpr_increase(.clock(Clock), .add_select(prgm_incr_select), .displacement(FSM_increase), .out_increase(increaser));
+	program_counter PC(.Clock(Clock), .Enable(prgEnable), .Reset(Reset), .increase(increaser), .program_no(program_no));
 	
-	program_counter PC(.Clock(Clock), .Enable(prgEnable), .Reset(Reset), .program_no(program_no));
-	
-	/*No data on port A since we wont write anything
-	Data B decoder_output is output from ALU C wire
-	program_no is the program number address which instruction to output
-	store_addr takes value store from a register file and writes to that address
-	likewise for wr_enable A and B
-	instruction_out puts out the 16 bit opcode instruction
+	/*
+	store_val_reg holds value that comes in to write to memory if store instruction used
+	Data B will output mem values to Arduino
+	store_addr takes grabs address for either load instruction or program counter to get data value
+	addr_b will take requests from Arduino
+	Write enable is for Store instruction
+	instruction_out puts out the 16 bit opcode instruction or data value from memory
 	output B is a placeholder for the future*/
 	true_dual_port_ram_single_clock mem(.data_a(store_val_reg), .data_b(16'bx), .addr_a(store_addr), .addr_b(12'bx)
 	, .we_a(mem_enable), .we_b(1'b0), .clk(Clock), .q_a(instruction_out), .q_b(outputB)); 
   
 	register_mod ALU_decoder(.instruction(fsm_instruction), .reset(Reset), .Clocks(Clock), .mem_data_in(instruction_out), 
-	.outBus(decoder_output), .outA(addr_reg), .outB(store_val_reg), .ren(reg_enable), .load_mux(load_mux_ctrl));
+	.outBus(decoder_output), .outA(addr_reg), .outB(store_val_reg), .ren(reg_enable), .load_mux(load_mux_ctrl), .flagwire(flagg));
 
-	FSM myfsm(Clock, Reset, instruction_out, prgEnable, fsm_instruction, mem_enable, ls_contrl, reg_enable, load_mux_ctrl);
+	FSM myfsm(Clock, Reset, instruction_out, flagg, prgEnable, fsm_instruction, mem_enable, ls_contrl, reg_enable, load_mux_ctrl, prgm_incr_select, FSM_increase);
   
 	mem_mux store(ls_contrl, program_no, addr_reg[11:0], store_addr);
+	
+	
   
 endmodule
 
@@ -50,11 +54,12 @@ endmodule
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-module FSM (clock, Reset, instruction, programCountEnable, out_instruction, mem_enable, mem_addrA_ctrl, reg_enable, load_mux_ctrl);
+module FSM (clock, Reset, instruction, Flags, programCountEnable, out_instruction, mem_enable, mem_addrA_ctrl, reg_enable, load_mux_ctrl, prgrm_count_increase, jmp_increase);
 
 	input clock, Reset;
-	input [15:0] instruction;
-	output reg programCountEnable, mem_enable, mem_addrA_ctrl, reg_enable, load_mux_ctrl;
+	input [15:0] instruction, Flags;
+	output reg programCountEnable, mem_enable, mem_addrA_ctrl, reg_enable, load_mux_ctrl, prgrm_count_increase;
+	output reg [7:0] jmp_increase;
 	output reg [15:0] out_instruction;
 
 	parameter S0=4'd0, S1=4'd1, S2=4'd2, S3=4'd3, S4=4'd4;
@@ -87,16 +92,23 @@ module FSM (clock, Reset, instruction, programCountEnable, out_instruction, mem_
 	parameter NOP    = 8'b00010111;
 	parameter STORE  = 8'b11011010;
 	parameter LOAD   = 8'b10011001;
-	
-	
+	parameter JUMP   = 8'b01000000; //Jump unconditional
+	parameter JL     = 8'b01000001; //Jump <
+	parameter JG     = 8'b01000010; //Jump >
+	parameter JLE    = 8'b01000011; //Jump <=
+	parameter JGE    = 8'b01000100; //Jump >=
+	parameter JE     = 8'b01000101; //Jump Equal
+
 	
 	reg [3:0] states, S;	// PS - Present State, NS - Next State
 	
-	wire [15:0] save_instr;
+	wire [15:0] save_instr, savedFlags;
 	
 	initial states = 0;
 
-	Register_FSM savedInstr(.in(instruction), .clk(clock), .en(states == S1), .out(save_instr)); //Module saves each instruction
+	//Registers to save previous instruction and flags
+	Register_FSM savedInstr(.in(instruction), .clk(clock), .en(states == S1), .out(save_instr));
+	Register_FSM FLAGS(.in(Flags), .clk(clock), .en(states == S2 || states == S3), .out(savedFlags));
 	
 	// Determines next state
 	 always @ (posedge clock or negedge Reset) begin
@@ -112,25 +124,35 @@ module FSM (clock, Reset, instruction, programCountEnable, out_instruction, mem_
 	always@(S)begin
 			if(S == S0) states=S1; //Takes instruction
 			else if(S == S1 && instruction[15:8] == NOP) states = S7; 
-			else if(S == S1 && instruction[15:8] != LOAD && instruction[15:8] != STORE) //&& instruction != JUMP
+			else if(S == S1 && instruction[15:8] != LOAD && instruction[15:8] != STORE && instruction[15:14] != 2'b01) //RType
 				states = S2;
+			
 			else if(S == S1 && instruction[15:8] == STORE)
 				states = S3;
+				
 			else if(S == S1 && instruction[15:8] == LOAD)
 				states = S4;
 			else if(S == S4)
 				states = S5;
-//			else if (S == S5)
-//				states = S6;
-			else if(S == S2 || S == S3)
-				states = S0;
-			else if(S == S7)
-				states = S0;
-			else 
-				states = S0; //This should never occur
 				
-			
-//						default: states = 4'd15;
+			else if(S == S1 && instruction[15:8] == JUMP)
+				states = S6;
+				
+			else if (S == S6 || S == S9 || S == S10 || S == S11 || S == S12 || S == S13)
+				states = S8; //finish JUMP 
+				
+			else if (S == S1 && instruction[15:8] == JL) //Jump if A is less than B  e.g. JL 10 6  is same as JL B A and would trigger true
+				states = S9;
+			else if (S == S1 && instruction[15:8] == JG)
+				states = S10;
+			else if (S == S1 && instruction[15:8] == JGE)
+				states = S11;
+			else if (S == S1 && instruction[15:8] == JLE)
+				states = S12;
+			else if (S == S1 && instruction[15:8] == JE)
+				states = S13;
+			else 
+				states = S0; //Reach the end of any state path, reset
 		
 	end
 
@@ -141,25 +163,62 @@ module FSM (clock, Reset, instruction, programCountEnable, out_instruction, mem_
 			S0: begin //fetches instruction
 				programCountEnable = 0; out_instruction = 16'bx; 
 				mem_enable = 0; mem_addrA_ctrl = 1; reg_enable = 0; 
-				load_mux_ctrl = 0; 
+				load_mux_ctrl = 0; prgrm_count_increase = 1; jmp_increase = 8'b0;
 				end 
 			S1: begin //Decode instruction
-				programCountEnable = 0; out_instruction = 16'bx; 
-				mem_enable = 0; mem_addrA_ctrl = 1; reg_enable = 0; load_mux_ctrl = 0;
+				programCountEnable = 0; out_instruction = 16'bx; prgrm_count_increase = 1;
+				mem_enable = 0; mem_addrA_ctrl = 1; reg_enable = 0; load_mux_ctrl = 0; jmp_increase = 8'b0;
 			end 
 			
 			//R type instructions
-			S2: begin programCountEnable = 1; out_instruction = save_instr; mem_enable = 0; mem_addrA_ctrl = 1; reg_enable = 1; load_mux_ctrl = 0;end				 end
+			S2: begin programCountEnable = 1; out_instruction = save_instr; mem_enable = 0; mem_addrA_ctrl = 1; reg_enable = 1; load_mux_ctrl = 0;
+					prgrm_count_increase = 1; jmp_increase = 8'b0;
+				 end
 			
 			//Store Instruction
 			S3: begin programCountEnable = 1; out_instruction = save_instr; mem_enable = 1; mem_addrA_ctrl = 0; reg_enable = 0; load_mux_ctrl = 0; //Execute Store instruction
+				 prgrm_count_increase = 1; jmp_increase = 8'b0;
 				 end
 				
-			//Load Instruction
-			S4: begin programCountEnable = 0; out_instruction = save_instr; mem_enable = 0; mem_addrA_ctrl = 0; reg_enable = 1; load_mux_ctrl = 1; end //Load address label to memory
-			S5: begin programCountEnable = 1; out_instruction = save_instr /*data is instruction here*/; mem_enable = 0; mem_addrA_ctrl = 0; reg_enable = 1; load_mux_ctrl = 1; end
+			//Load Instruction; S5 holds the value from memory to add
+			S4: begin programCountEnable = 0; out_instruction = save_instr; mem_enable = 0; mem_addrA_ctrl = 0; reg_enable = 1; load_mux_ctrl = 1; prgrm_count_increase = 1; jmp_increase = 8'b0;end 
+			S5: begin programCountEnable = 1; out_instruction = save_instr /*data is instruction here*/; mem_enable = 0; mem_addrA_ctrl = 0; reg_enable = 1; 
+				prgrm_count_increase = 1;load_mux_ctrl = 1; jmp_increase = 8'b0; end
 			
-			S7: begin programCountEnable = 1; out_instruction = 16'bx; mem_enable = 0; mem_addrA_ctrl = 1; reg_enable = 0; load_mux_ctrl = 0; end //NOP instruction
+			//Unconditional Jump
+			S6: begin programCountEnable = 0; out_instruction = save_instr; mem_enable = 0; mem_addrA_ctrl = 1; 
+				reg_enable = 0; load_mux_ctrl = 0; prgrm_count_increase = 0; jmp_increase = save_instr[7:0]; //Loads the displacement to programcounter
+				end 
+			S8: begin programCountEnable = 1; out_instruction = save_instr; mem_enable = 0; mem_addrA_ctrl = 1; 
+				reg_enable = 0; load_mux_ctrl = 0; prgrm_count_increase = 0; jmp_increase = save_instr[7:0];// Now able to execute displacement
+				end 
+
+			//NOP instruction
+			S7: begin programCountEnable = 1; out_instruction = 16'bx; mem_enable = 0; mem_addrA_ctrl = 1; reg_enable = 0; 
+				load_mux_ctrl = 0; prgrm_count_increase = 1; jmp_increase = 8'b0;
+				end 
+			
+			//JL instruction
+			S9: begin programCountEnable = 0; out_instruction = save_instr; mem_enable = 0; mem_addrA_ctrl = 1; 
+				reg_enable = 0; load_mux_ctrl = 0; prgrm_count_increase = 0; jmp_increase = (savedFlags[0] == 0  && savedFlags[4] == 0 ) ? save_instr[7:0] : 8'b0; //Loads the displacement to programcounter
+				end 
+			//JG	
+			S10: begin programCountEnable = 0; out_instruction = save_instr; mem_enable = 0; mem_addrA_ctrl = 1; 
+				reg_enable = 0; load_mux_ctrl = 0; prgrm_count_increase = 0; jmp_increase = (savedFlags[0] == 1) ? save_instr[7:0] : 8'b0; //Loads the displacement to programcounter
+				end
+			//JGE
+			S11: begin programCountEnable = 0; out_instruction = save_instr; mem_enable = 0; mem_addrA_ctrl = 1; 
+				reg_enable = 0; load_mux_ctrl = 0; prgrm_count_increase = 0; jmp_increase = (savedFlags[0] == 1  || savedFlags[4] == 1 ) ? save_instr[7:0] : 8'b0; //Loads the displacement to programcounter
+				end
+			//JLE
+			S12: begin programCountEnable = 0; out_instruction = save_instr; mem_enable = 0; mem_addrA_ctrl = 1; 
+				reg_enable = 0; load_mux_ctrl = 0; prgrm_count_increase = 0; jmp_increase = (savedFlags[0] == 0) ? save_instr[7:0] : 8'b0; //Loads the displacement to programcounter
+				end
+			//JE
+			S13: begin programCountEnable = 0; out_instruction = save_instr; mem_enable = 0; mem_addrA_ctrl = 1; 
+				reg_enable = 0; load_mux_ctrl = 0; prgrm_count_increase = 0; jmp_increase = (savedFlags[4] == 1) ? save_instr[7:0] : 8'b0; //Loads the displacement to programcounter
+				end
+				
 	  endcase
 	end
 
