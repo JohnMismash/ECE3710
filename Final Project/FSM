@@ -39,7 +39,7 @@ module FSM(Clock, Reset, instruction_out);//out0, out1, out2, out3);
 	true_dual_port_ram_single_clock mem(.data_a(store_val_reg), .data_b(16'bx), .addr_a(store_addr), .addr_b(12'bx)
 	, .we_a(mem_enable), .we_b(1'b0), .clk(Clock), .q_a(instruction_out), .q_b(outputB)); 
   
-	register_mod ALU_decoder(.instruction(fsm_instruction), .reset(Reset), .Clocks(Clock), .mem_data_in(instruction_out), 
+	ALU_decoder ALU_decode(.instruction(fsm_instruction), .reset(Reset), .Clocks(Clock), .mem_data_in(instruction_out), 
 	.outBus(decoder_output), .outA(addr_reg), .outB(store_val_reg), .ren(reg_enable), .load_mux(load_mux_ctrl), .flagwire(flagg));
 
 	FSM myfsm(Clock, Reset, instruction_out, flagg, prgEnable, fsm_instruction, mem_enable, ls_contrl, reg_enable, load_mux_ctrl, prgm_incr_select, FSM_increase);
