@@ -41,14 +41,41 @@ def assemble(line):
             raise ValueError
         return '0001011100000000'
 
-    elif len(split) == 2: # NOT instruction
-        if op != 'NOT':
+    elif len(split) == 2: # NOT and jump instructions
+        if op != 'NOT' and op[0] != 'J':
             raise ValueError
 
+        if op == 'NOT':
+            op = switch_op(op)
+            Rdst = switch_reg(split[1])
+            return_str = op + Rdst + '0000'
 
-        op = switch_op(op)
-        Rdst = switch_reg(split[1])
-        return_str = op + Rdst + '0000'
+        else:
+            op = switch_op(op)
+           
+            neg = False
+            if split[1][0] == '-':
+                neg = True
+                split[1] = split[1][1:] # Remove negative sign
+
+            bin_val = format(int(split[1]), 'b')
+            bin_val = bin_val.zfill(8)
+
+            if neg == True:
+                bin_val = bin_val.replace('0', '2')
+                bin_val = bin_val.replace('1', '0')
+                bin_val = bin_val.replace('2', '1')
+
+                bin_val = bin(int(bin_val, 2) + int('1', 2))
+                bin_val = bin_val[2:]
+                #bin_val = bin((1 * int(bin_val)) % 2**8)
+                #bin_val = bin((-1 * int(bin_val))+(1<<8))
+
+                #bin_val = bin_val.replace('0b', '')
+
+                #bin_val = '1' * (8 - len(bin_val)) + bin_val
+            
+            return_str = op + bin_val
 
         return return_str
 
@@ -77,6 +104,7 @@ def assemble(line):
 
             if len(Rsrc) < 3:
                 Rsrc = Rsrc[0] + '0' + Rsrc[1]
+
             if len(Rdst) < 3:
                 Rdst = Rdst[0] + '0' + Rdst[1]
 
@@ -163,7 +191,22 @@ def switch_op(op):
         return '00010111'
 
     elif op == 'JMP' or op == 'JUMP':
-        return '00011000'
+        return '01000000'
+
+    elif op == 'JL':
+        return '01000001'
+
+    elif op == 'JG':
+        return '01000010'
+
+    elif op == 'JLE':
+        return '01000011'
+
+    elif op == 'JGE':
+        return '01000100'
+
+    elif op == 'JE':
+        return '01000101'
 
     elif op == 'LOAD':
         return '10011001'
