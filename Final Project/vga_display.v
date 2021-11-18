@@ -24,7 +24,7 @@ output wire Y;
 // in the top left corner), and will extend.
 
 // The pixel rate (ie. 25 MHz) determines the pixel scan rate per second.
-// In order to simplify the math, we can represent our display as a 0 x
+// In order to simplify the math, we can represent our display as a 800 x
 // 800 grid.
 
 
