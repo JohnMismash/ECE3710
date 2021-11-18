@@ -1,303 +1,565 @@
-module FSM_Final(Clock, Reset, controller_state, out0, out1, out2, out3);
+module register_mod(instruction, reset, Clocks, mem_data_in, controller_movement, outBus, outA, outB, ren, load_mux, flagwire);
+	input [15:0] instruction, mem_data_in, controller_movement;
+	input Clocks, reset, ren, load_mux;
+	wire [15:0] reg_w;
+	output wire [15:0] flagwire;
+	wire [3:0] reg_enable_decoder;
+	wire [15:0] alu_out, r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15,  B_muxed, alu_output;
 
-	input wire Clock, Reset;
-	input wire [1:0] controller_state;
-	output wire [6:0] out0, out2, out3, out1;
-
-	//These are the FSM outputs
-	wire prgEnable, ls_ctrl, reg_enable, load_mux_ctrl, prgrm_incr_select;
+	output [15:0] outBus, outA, outB;
 	
-  
-  //Program Counter Hookup
-	wire [11:0] program_no;
-	wire [7:0]  FSM_increase, increaser;
-  
-  //Memory Hookup
-	wire [15:0] outputB, addr_reg, store_val_reg, fsm_instruction, flagg;
-	wire [11:0] store_addr;
-	wire mem_enable;
+	reg [3:0] A, B;
+	reg [7:0] opcode;
 
-	//This is the ALU/Reg Computation Hookups
-	wire [15:0] instruction_out;
-	wire [15:0] decoder_output;
-	wire [15:0]  controller_out_fsm;
-	
-	hexTo7Seg blockdata1(program_no[3:0], out0);
-	hexTo7Seg blockdata2(program_no[7:4], out1);
-	hexTo7Seg blockdata3(program_no[11:8], out2);
-	hexTo7Seg blockdata4(instruction_out[15:12], out3);
-	
-	program_counter_increaser jmpr_increase(.clock(Clock), .add_select(prgm_incr_select), .displacement(FSM_increase), .out_increase(increaser));
-	program_counter PC(.Clock(Clock), .Enable(prgEnable), .Reset(Reset), .increase(increaser), .program_no(program_no));
-	
-	/*
-	store_val_reg holds value that comes in to write to memory if store instruction used
-	Data B will output mem values to Arduino
-	store_addr takes grabs address for either load instruction or program counter to get data value
-	addr_b will take requests from Arduino
-	Write enable is for Store instruction
-	instruction_out puts out the 16 bit opcode instruction or data value from memory
-	output B is a placeholder for the future*/
-	true_dual_port_ram_single_clock mem(.data_a(store_val_reg), .data_b(16'bx), .addr_a(store_addr), .addr_b(12'bx)
-	, .we_a(mem_enable), .we_b(1'b0), .clk(Clock), .q_a(instruction_out), .q_b(outputB)); 
-  
-	register_mod ALU_decoder(.instruction(fsm_instruction), .reset(Reset), .Clocks(Clock), .mem_data_in(instruction_out), .controller_movement(controller_out_fsm),
-	.outBus(decoder_output), .outA(addr_reg), .outB(store_val_reg), .ren(reg_enable), .load_mux(load_mux_ctrl), .flagwire(flagg));
-
-	FSM myfsm(Clock, Reset, instruction_out, flagg, controller_state, prgEnable, fsm_instruction, mem_enable, ls_contrl, reg_enable, load_mux_ctrl, prgm_incr_select, FSM_increase, control_out_fsm);
-  
-	mem_mux store(ls_contrl, program_no, addr_reg[11:0], store_addr);
-	
-	
-  
-endmodule
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-module FSM (clock, Reset, instruction, Flags, control_in, programCountEnable, out_instruction, mem_enable, mem_addrA_ctrl, reg_enable, load_mux_ctrl, prgrm_count_increase, jmp_increase, control_out);
-
-	input clock, Reset;
-	input [15:0] instruction, Flags, control_in;
-	output reg programCountEnable, mem_enable, mem_addrA_ctrl, reg_enable,  prgrm_count_increase;
-	output reg [1:0] load_mux_ctrl, control_out;
-	output reg [7:0] jmp_increase;
-	output reg [15:0] out_instruction;
-
-	parameter S0=4'd0, S1=4'd1, S2=4'd2, S3=4'd3, S4=4'd4;
-	parameter S5=4'd5, S6=4'd6, S7=4'd7, S8=4'd8, S9=4'd9;
-	parameter S10=4'd10, S11=4'd11, S12=4'd12, S13=4'd13;
-	parameter S14=4'd14, S15=4'd15;
-	
-	parameter ADD    = 8'b00000000;
-	parameter ADDI   = 8'b00000001;
-	parameter ADDU   = 8'b00000010;
-	parameter ADDUI  = 8'b00000011;
-	parameter ADDC   = 8'b00000100;
-	parameter ADDCU  = 8'b00000101;
-	parameter ADDCUI = 8'b00000110;
-	parameter ADDCI  = 8'b00000111;
-	parameter SUB    = 8'b00001000;
-	parameter SUBI   = 8'b00001001;
-	parameter CMP    = 8'b00001010;
-	parameter CMPI   = 8'b00001011;
-	parameter CMPU   = 8'b00001100;
-	parameter AND    = 8'b00001101;
-	parameter OR     = 8'b00001110;
-	parameter XOR    = 8'b00001111;
-	parameter NOT    = 8'b00010000;
-	parameter LSH    = 8'b00010001;
-	parameter LSHI   = 8'b00010010;
-	parameter RSH    = 8'b00010011;
-	parameter RSHI   = 8'b00010100;
-	parameter ALSH   = 8'b00010101;
-	parameter ARSH   = 8'b00010110;
-	parameter NOP    = 8'b00010111;
-	parameter STORE  = 8'b11011010;
-	parameter LOAD   = 8'b10011001;
-	parameter JUMP   = 8'b01000000; //Jump unconditional
-	parameter JL     = 8'b01000001; //Jump <
-	parameter JG     = 8'b01000010; //Jump >
-	parameter JLE    = 8'b01000011; //Jump <=
-	parameter JGE    = 8'b01000100; //Jump >=
-	parameter JE     = 8'b01000101; //Jump Equal
-	parameter CTLST  = 8'b10000000; //Loads instruction from controller and Loads in R0
-
-	
-	reg [3:0] states, S;	// PS - Present State, NS - Next State
-	
-	wire [15:0] save_instr, savedFlags, control_st;
-	
-	initial states = 0;
-
-	//Registers to save previous instruction and flags
-	Register_FSM savedInstr(.in(instruction), .clk(clock), .en(states == S1), .out(save_instr));
-	Register_FSM FLAGS(.in(Flags), .clk(clock), .en(states == S2 || states == S3), .out(savedFlags));
-	Register_FSM Controller(.in(control_in), .clk(clock), .en(states == S1 || states == S2), .out(control_st));
-	
-	// Determines next state
-	 always @ (posedge clock or negedge Reset) begin
-			  if (!Reset)
-					S <= S0;
-			  else
-					S <= states;
-
+	always@(*)begin //Sets the different sections of the flag
+		opcode = instruction[15:8];
+		A = instruction[7:4];
+		B = instruction[3:0];
 	end
 
-
-	// Present State becomes Next State
-	always@(S)begin
-			if(S == S0) states=S1; //Takes instruction
-			else if(S == S1 && instruction[15:8] == NOP) states = S7; 
-			else if(S == S1 && instruction[15:8] != LOAD && instruction[15:8] != STORE && instruction[15:14] != 2'b01) //RType
-				states = S2;
-			
-			else if(S == S1 && instruction[15:8] == STORE)
-				states = S3;
-				
-			else if(S == S1 && instruction[15:8] == LOAD)
-				states = S4;
-			else if(S == S4)
-				states = S5;
-				
-			else if(S == S1 && instruction[15:8] == CTLST) //Loads controller state to R0
-				states = S14;
-				
-			else if(S == S1 && instruction[15:8] == JUMP)
-				states = S6;
-				
-			else if (S == S6 || S == S9 || S == S10 || S == S11 || S == S12 || S == S13)
-				states = S8; //finish JUMP 
-				
-			else if (S == S1 && instruction[15:8] == JL) //Jump if A is less than B  e.g. JL 10 6  is same as JL B A and would trigger true
-				states = S9;
-			else if (S == S1 && instruction[15:8] == JG)
-				states = S10;
-			else if (S == S1 && instruction[15:8] == JGE)
-				states = S11;
-			else if (S == S1 && instruction[15:8] == JLE)
-				states = S12;
-			else if (S == S1 && instruction[15:8] == JE)
-				states = S13;
-			else if(S == S14)
-				states = S15;
-			else 
-				states = S0; //Reach the end of any state path, reset
-		
-	end
-
-	// Output relies only on current state
-	always@(states)begin 
+	Decoder_mux decode(load_mux,opcode, A, B, reg_enable_decoder); 
+	Fourto16decoder regEnable(ren, opcode, reg_enable_decoder, reg_w);
 	
-	  case (states)
-			S0: begin //fetches instruction
-				programCountEnable = 0; out_instruction = 16'bx; 
-				mem_enable = 0; mem_addrA_ctrl = 1; reg_enable = 0; 
-				load_mux_ctrl = 2'b0; prgrm_count_increase = 1; jmp_increase = 8'b0; control_out = 2'b00;
-				end 
-			S1: begin //Decode instruction
-				programCountEnable = 0; out_instruction = 16'bx; prgrm_count_increase = 1;
-				mem_enable = 0; mem_addrA_ctrl = 1; reg_enable = 0; load_mux_ctrl = 2'b0; jmp_increase = 8'b0; control_out = 2'b00;
-			end 
-			
-			//R type instructions
-			S2: begin programCountEnable = 1; out_instruction = save_instr; mem_enable = 0; mem_addrA_ctrl = 1; reg_enable = 1; load_mux_ctrl = 2'b00;
-					prgrm_count_increase = 1; jmp_increase = 8'b0; control_out = 2'b00;
-				 end
-			
-			//Store Instruction
-			S3: begin programCountEnable = 1; out_instruction = save_instr; mem_enable = 1; mem_addrA_ctrl = 0; reg_enable = 0; load_mux_ctrl = 2'b00; //Execute Store instruction
-				 prgrm_count_increase = 1; jmp_increase = 8'b0; control_out = 2'b00;
-				 end
-				
-			//Load Instruction; S5 holds the value from memory to add
-			S4: begin programCountEnable = 0; out_instruction = save_instr; mem_enable = 0; mem_addrA_ctrl = 0; control_out = 2'b00; reg_enable = 1; load_mux_ctrl = 2'b01; prgrm_count_increase = 1; jmp_increase = 8'b0;end 
-			S5: begin programCountEnable = 1; out_instruction = save_instr /*data is instruction here*/; mem_enable = 0; mem_addrA_ctrl = 0; reg_enable = 1; 
-				prgrm_count_increase = 1;load_mux_ctrl = 2'b01; jmp_increase = 8'b0; control_out = 2'b00;end
-			
-			//Unconditional Jump
-			S6: begin programCountEnable = 0; out_instruction = save_instr; mem_enable = 0; mem_addrA_ctrl = 1; 
-				reg_enable = 0; load_mux_ctrl = 2'b00; prgrm_count_increase = 0; jmp_increase = save_instr[7:0]; //Loads the displacement to programcounter
-				end 
-			S8: begin programCountEnable = 1; out_instruction = save_instr; mem_enable = 0; mem_addrA_ctrl = 1; 
-				reg_enable = 0; load_mux_ctrl = 2'b00; prgrm_count_increase = 0; jmp_increase = save_instr[7:0];// Now able to execute displacement
-				end 
-
-			//NOP instruction
-			S7: begin programCountEnable = 1; out_instruction = 16'bx; mem_enable = 0; mem_addrA_ctrl = 1; reg_enable = 0; 
-				load_mux_ctrl = 2'b00; prgrm_count_increase = 1; jmp_increase = 8'b0;
-				end 
-			
-			//JL instruction
-			S9: begin programCountEnable = 0; out_instruction = save_instr; mem_enable = 0; mem_addrA_ctrl = 1; control_out = 2'b00;
-				reg_enable = 0; load_mux_ctrl = 2'b00; prgrm_count_increase = 0; jmp_increase = (savedFlags[0] == 0  && savedFlags[4] == 0 ) ? save_instr[7:0] : 8'b0; //Loads the displacement to programcounter
-				end 
-			//JG	
-			S10: begin programCountEnable = 0; out_instruction = save_instr; mem_enable = 0; mem_addrA_ctrl = 1; control_out = 2'b00;
-				reg_enable = 0; load_mux_ctrl = 2'b00; prgrm_count_increase = 0; jmp_increase = (savedFlags[0] == 1) ? save_instr[7:0] : 8'b0; //Loads the displacement to programcounter
-				end
-			//JGE
-			S11: begin programCountEnable = 0; out_instruction = save_instr; mem_enable = 0; mem_addrA_ctrl = 1; control_out = 2'b00;
-				reg_enable = 0; load_mux_ctrl = 2'b00; prgrm_count_increase = 0; jmp_increase = (savedFlags[0] == 1  || savedFlags[4] == 1 ) ? save_instr[7:0] : 8'b0; //Loads the displacement to programcounter
-				end
-			//JLE
-			S12: begin programCountEnable = 0; out_instruction = save_instr; mem_enable = 0; mem_addrA_ctrl = 1; control_out = 2'b00;
-				reg_enable = 0; load_mux_ctrl = 2'b00; prgrm_count_increase = 0; jmp_increase = (savedFlags[0] == 0) ? save_instr[7:0] : 8'b0; //Loads the displacement to programcounter
-				end
-			//JE
-			S13: begin programCountEnable = 0; out_instruction = save_instr; mem_enable = 0; mem_addrA_ctrl = 1; control_out = 2'b00;
-				reg_enable = 0; load_mux_ctrl = 2'b00; prgrm_count_increase = 0; jmp_increase = (savedFlags[4] == 1) ? save_instr[7:0] : 8'b0; //Loads the displacement to programcounter
-				end
-			
-			//CTLST
-			S14: begin programCountEnable = 0; out_instruction = save_instr; mem_enable = 0; mem_addrA_ctrl = 0; reg_enable = 1; load_mux_ctrl = 2'b10; prgrm_count_increase = 1; jmp_increase = 8'b0; control_out = control_st;end 
-			S15: begin programCountEnable = 1; out_instruction = save_instr; mem_enable = 0; mem_addrA_ctrl = 0; reg_enable = 1; load_mux_ctrl = 2'b10; prgrm_count_increase = 1; jmp_increase = 8'b0; control_out = control_st;end 
-
-	  endcase
-	end
+	//Component modules
+	RegBank reg_bank(outBus,r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, reg_w, Clocks, reset);	
+	//Register flags (flagwire, 1'b1, reset, Clocks, flagwire); 
+	reg_mux regA (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, A,outA);
+	reg_mux regB (r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, B,outB);
+	alu_mux alumux(outB, B, opcode, B_muxed);
+	ALU alu(outA, B_muxed, alu_output, opcode, flagwire);
+	load_mux load(load_mux, controller_movement, mem_data_in, alu_output, outBus);
 
 endmodule 
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+module Fourto16decoder(ren, Opcode, d_in, d_out);
+	input ren;
+	input [3:0] d_in;
+	input [7:0] Opcode;
+	output reg [15:0] d_out;
+	parameter tmp = 16'b0000_0000_0000_0001;
+	parameter NOP    = 8'b00010111;
+	parameter STORE  = 8'b11011010;
+	parameter LOAD   = 8'b10011001;
+	parameter CMP    = 8'b00001010;
+	parameter CMPI   = 8'b00001011;
+	parameter CMPU   = 8'b00001100;
+
+always@(*) begin
+
+	if (ren) begin
+		
+		if (Opcode == CMP || Opcode == CMPI || Opcode == CMPU) begin //Do not enable any reg in case of CMP or NOP instruction
+			d_out = 16'd0; end
+		
+		else begin
+			case (d_in)
+				4'b0000: begin d_out = tmp; end
+				4'b0001: begin d_out = tmp<<1; end
+				4'b0010: begin d_out = tmp<<2; end
+				4'b0011: begin d_out = tmp<<3; end
+				4'b0100: begin d_out = tmp<<4; end
+				4'b0101: begin d_out = tmp<<5; end
+				4'b0110: begin d_out = tmp<<6; end
+				4'b0111: begin d_out = tmp<<7; end
+				4'b1000: begin d_out = tmp<<8; end
+				4'b1001: begin d_out = tmp<<9; end
+				4'b1010: begin d_out = tmp<<10; end
+				4'b1011: begin d_out = tmp<<11; end
+				4'b1100: begin d_out = tmp<<12; end
+				4'b1101: begin d_out = tmp<<13; end
+				4'b1110: begin d_out = tmp<<14; end
+				4'b1111: begin d_out = tmp<<15; end
+				default: begin d_out = 16'bxxxx_xxxx_xxxx_xxxx; end
+			endcase
+		end
+	end
+			
+			
+	else
+		d_out = 16'd0;
+end
+
+endmodule 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+module reg_mux(r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, s, out);
+	input [15:0] r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15; 
+	input [3:0] s;
+	output reg [15:0] out;
+	
+	always @(*) begin
+		case(s)
+			  4'b0000:  out <= r0; 
+			  4'b0001:  out <= r1;
+			  4'b0010:  out <= r2;
+			  4'b0011:  out <= r3;
+			  4'b0100:  out <= r4;
+			  4'b0101:  out <= r5;
+			  4'b0110:  out <= r6;
+			  4'b0111:  out <= r7;
+			  4'b1000:  out <= r8;
+			  4'b1001:  out <= r9;
+			  4'b1010:  out <= r10;
+			  4'b1011:  out <= r11;
+			  4'b1100:  out <= r12;
+			  4'b1101:  out <= r13;
+			  4'b1110:  out <= r14;
+			  4'b1111:  out <= r15;
+			  endcase
+	end
+	
+endmodule
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+module alu_mux(reg_val, imm_val, op_control, out);
+	input [15:0] reg_val;
+	input [3:0] imm_val;
+	input [7:0] op_control;
+	output reg [15:0] out;
+
+	
+	always @(*)begin//If op_control is equal t store or immediate instructions, output those
+	if (op_control == 8'b00000001 /*ADDI*/||  op_control == 8'b00000111 /*ADDCI*/ || op_control == 8'b00001011 /*CMPI*/)
+		out = $signed(imm_val);
+	else if (op_control == 8'b00000011 /*ADDUI*/ || op_control == 8'b00000110 /*ADDCUI*/|| op_control == 8'b00001001 /*SUBI*/||op_control == 8'b00010010 /*LSHI*/||op_control ==  8'b00010100 /*RSHI*/) begin
+			out = $unsigned(imm_val); end
+			
+	else begin
+		out = reg_val; end
+	end
+		
+endmodule
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-// Mux for the memory module for accessing addresses
+// Mux for the decoder to write to register
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-module mem_mux(ls_ctrl, instr_code, addr, fetch_addr);
-input ls_ctrl;
-input [11:0] instr_code;
-input [11:0] addr;
-output reg [11:0] fetch_addr;
+
+module Decoder_mux(loader, instr_code, enableA, enableB, ABEnable);
+input [7:0] instr_code;
+input [3:0] enableA, enableB;
+input loader;
+output reg [3:0] ABEnable;
+parameter STORE  = 8'b11011010;
+parameter LOAD   = 8'b10011001;
 
 always@(*)begin
-	if(ls_ctrl)begin //Let the 2 MSB be equal to 11 indicating a store instruction
-		fetch_addr = instr_code;
-		end
-	else begin
-		fetch_addr = addr;
-		end
+	if(instr_code == LOAD || loader) //Let the 2 MSB be equal to 10 indicating a load instruction. enable B register
+		ABEnable = enableB;	
+	else
+		ABEnable = enableA;  //Otherwise enable A register as normal
+	
 end
 endmodule 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-// 
+// Mux for the value from the controller, the data from memory, or ALU output to the bus
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+module load_mux(loader, controller, mem_data, alu_output, c_output);
+input [1:0]loader;
+input [1:0]controller;
+input [15:0] mem_data;
+input [15:0] alu_output;
+output reg [15:0] c_output;
 
-module hexTo7Seg(input [3:0]x, output reg [6:0]z);
-always @*
-case(x)
-	4'b0000 :			//Hexadecimal 0
-	z = ~7'b0111111;
-   4'b0001 :			//Hexadecimal 1
-	z = ~7'b0000110;
-   4'b0010 :			//Hexadecimal 2
-	z = ~7'b1011011;
-   4'b0011 : 			//Hexadecimal 3
-	z = ~7'b1001111;
-   4'b0100 : 			//Hexadecimal 4
-	z = ~7'b1100110;
-   4'b0101 : 			//Hexadecimal 5
-	z = ~7'b1101101;
-   4'b0110 : 			//Hexadecimal 6
-	z = ~7'b1111101;
-   4'b0111 :			//Hexadecimal 7
-	z = ~7'b0000111;
-   4'b1000 : 			//Hexadecimal 8
-	z = ~7'b1111111;
-   4'b1001 : 			//Hexadecimal 9
-	z = ~7'b1100111;
-	4'b1010 : 			//Hexadecimal A
-	z = ~7'b1110111;
-	4'b1011 : 			//Hexadecimal B
-	z = ~7'b1111100;
-	4'b1100 : 			//Hexadecimal C
-	z = ~7'b1011000;
-	4'b1101 : 			//Hexadecimal D
-	z = ~7'b1011110;
-	4'b1110 : 			//Hexadecimal E
-	z = ~7'b1111001;
-	4'b1111 : 			//Hexadecimal F	
-	z = ~7'b1110001; 
-   default :
-	z = ~7'b0000000;
-endcase
+always@(*)begin
+	if(loader == 2'b01) //Let the 2 MSB be equal to 10 indicating a load instruction. Load data from memory
+		c_output = mem_data;
+			
+	else if(loader == 2'b10)
+		c_output = $unsigned(controller);
+	else
+		c_output = alu_output;  //If it is not an immediate or store instruction, outputs undefined
+	
+end
 endmodule 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+module Register(D_in, wEnable, reset, clk, r);
+	input [15:0] D_in;
+	input clk, wEnable, reset;
+	output reg [15:0] r;
+	 
+ always @( posedge clk )
+	begin
+		if (!reset) begin
+			r <= 16'b0000000000000000; end
+	else
+		begin			
+			if (wEnable)
+				begin
+					r <= D_in;
+				end
+			else
+				begin
+					r <= r;
+				end
+		end
+	end
+endmodule
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Shown below is one way to implement the register file
+// This is a bottom-up, structural instantiation
+// Another module is described in another file...
+// .... which shows two dimensional construct for regfile
+
+// Structural Implementation of RegBank
+/********/
+module RegBank(ALUBus, r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, regEnable, clk, reset);
+	input clk, reset;
+	input [15:0] ALUBus;
+	input [15:0] regEnable;
+	output [15:0] r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
+
+	
+Register Inst0(
+	.D_in(ALUBus),
+	.wEnable(regEnable[0]),
+	.reset(reset), 
+	.clk(clk),
+	.r(r0));
+Register Inst1(ALUBus, regEnable[1], reset, clk, r1);
+Register Inst2(ALUBus, regEnable[2], reset, clk, r2);
+Register Inst3(ALUBus, regEnable[3], reset, clk, r3);
+Register Inst4(ALUBus, regEnable[4], reset, clk, r4);
+Register Inst5(ALUBus, regEnable[5], reset, clk, r5);
+Register Inst6(ALUBus, regEnable[6], reset, clk, r6);
+Register Inst7(ALUBus, regEnable[7], reset, clk, r7);
+Register Inst8(ALUBus, regEnable[8], reset, clk, r8);
+Register Inst9(ALUBus, regEnable[9], reset, clk, r9);
+Register Inst10(ALUBus, regEnable[10], reset, clk, r10);
+Register Inst11(ALUBus, regEnable[11], reset, clk, r11);
+Register Inst12(ALUBus, regEnable[12], reset, clk, r12);
+Register Inst13(ALUBus, regEnable[13], reset, clk, r13);
+Register Inst14(ALUBus, regEnable[14], reset, clk, r14);
+Register Inst15(ALUBus, regEnable[15], reset, clk, r15); 
+
+endmodule
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+module ALU( A, B, C, Opcode, Flags);
+input [15:0] A, B;
+input [7:0] Opcode;
+output reg [15:0] C;
+output reg [15:0] Flags; // Flags[4]-ZF Flags[3]-CF,  Flags[2]-FF, Flags[1]-LF, Flags[0]-NF -> truncate leading bits
+
+parameter ADD    = 8'b00000000;
+parameter ADDI   = 8'b00000001;
+parameter ADDU   = 8'b00000010;
+parameter ADDUI  = 8'b00000011;
+parameter ADDC   = 8'b00000100;
+parameter ADDCU  = 8'b00000101;
+parameter ADDCUI = 8'b00000110;
+parameter ADDCI  = 8'b00000111;
+parameter SUB    = 8'b00001000;
+parameter SUBI   = 8'b00001001;
+parameter CMP    = 8'b00001010;
+parameter CMPI   = 8'b00001011;
+parameter CMPU   = 8'b00001100;
+parameter AND    = 8'b00001101;
+parameter OR     = 8'b00001110;
+parameter XOR    = 8'b00001111;
+parameter NOT    = 8'b00010000;
+parameter LSH    = 8'b00010001;
+parameter LSHI   = 8'b00010010;
+parameter RSH    = 8'b00010011;
+parameter RSHI   = 8'b00010100;
+parameter ALSH   = 8'b00010101;
+parameter ARSH   = 8'b00010110;
+parameter NOP    = 8'b00010111;
+parameter STORE  = 8'b11011010;
+parameter LOAD   = 8'b10011001;
+parameter CTLST  = 8'b10000000;
+
+always @(A, B, Opcode)
+begin
+	case (Opcode)
+	ADDU:
+		begin
+		{Flags[3], C} = A + B;
+
+		if (C == 'h0)
+			Flags[4] = 1'b1; // Set Z flag if all zeros
+		else
+			Flags[4] = 1'b0;
+		Flags[2:0] = 3'b000;
+		Flags[15:5] = 9'b0;
+		end
+
+	ADD:
+		begin
+		C = A + B;
+		if (C == 'h0) Flags[4] = 1'b1;
+		else Flags[4] = 1'b0;
+		if( (~A[15] & ~B[15] & C[15]) | (A[15] & B[15] & ~C[15]) ) Flags[2] = 1'b1; // Checks if overflow occurred. Another way of writing it: if (a > 0 & b > 0 & c < 0 | a < 0 & b < 0 & c > 0), set overflow bit.
+		else Flags[2] = 1'b0;
+		Flags[1:0] = 2'b00; Flags[3] = 1'b0;
+		Flags[15:5] = 9'b0;
+		end
+
+    ADDI:
+        begin
+		C = A + B;
+		if (C == 4'b0000) Flags[4] = 1'b1;
+		else Flags[4] = 1'b0;
+		if( (~A[15] & ~B[15] & C[15]) | (A[15] & B[15] & ~C[15]) ) Flags[2] = 1'b1;
+		else Flags[2] = 1'b0;
+		Flags[1:0] = 2'b00; Flags[3] = 1'b0;
+		Flags[15:5] = 9'b0;
+		end
+
+    ADDUI:
+		begin
+		{Flags[3], C} = (A + B);
+		// perhaps if ({Flags[3], C} == 5'b00000) ....
+		if (C == 'h0) Flags[4] = 1'b1;
+		else Flags[4] = 1'b0;
+		Flags[2:0] = 3'b000;
+		Flags[15:5] = 9'b0;
+		end
+
+    ADDC:
+        begin
+        C = A + B + Flags[3];
+		if (C == 'h0) Flags[4] = 1'b1;
+		else Flags[4] = 1'b0;
+		if( (~A[15] & ~B[15] & C[15]) | (A[15] & B[15] & ~C[15]) ) Flags[2] = 1'b1;
+		else Flags[2] = 1'b0;
+		Flags[1:0] = 2'b00; Flags[3] = 1'b0;
+		Flags[15:5] = 9'b0;
+		end
+
+    ADDCU:
+		begin
+		{Flags[3], C} = A + B + Flags[3];
+		// perhaps if ({Flags[3], C} == 5'b00000) ....
+		if (C == 'h0) Flags[4] = 1'b1;
+		else Flags[4] = 1'b0;
+		Flags[2:0] = 3'b000;
+		Flags[15:5] = 9'b0;
+		end
+
+    ADDCUI:
+		begin
+		{Flags[3], C} = A + B + Flags[3];
+		// perhaps if ({Flags[3], C} == 5'b00000) ....
+		if (C == 'h0) Flags[4] = 1'b1;
+		else Flags[4] = 1'b0;
+		Flags[2:0] = 3'b000;
+		Flags[15:5] = 9'b0;
+		end
+
+    ADDCI:
+		begin
+		{Flags[3], C} = A + Flags[3];
+		// perhaps if ({Flags[3], C} == 5'b00000) ....
+		if (C == 'h0) Flags[4] = 1'b1;
+		else Flags[4] = 1'b0;
+		Flags[2:0] = 3'b000;
+		Flags[15:5] = 9'b0;
+		end
+
+	SUB:
+		begin
+		C = A - B;
+		if (C == 16'd0) Flags[4] = 1'b1; //Sets the Z flag
+		else Flags[4] = 1'b0;
+		if( (~A[15] & ~B[15] & C[15]) | (A[15] & B[15] & ~C[15]) ) Flags[2] = 1'b1; //Sets the F flag
+		else Flags[2] = 1'b0;
+
+		Flags[1:0] = 2'b00; Flags[3] = 1'b0; //Ensure Other Flags to 0
+		Flags[15:5] = 9'b0;
+		end
+
+	SUBI: //Same as SUB
+		begin
+		C = A - B;
+		if (C == 16'd0) Flags[4] = 1'b1; //Sets the Z flag
+		else Flags[4] = 1'b0;
+		if( (~A[15] & ~B[15] & C[15]) | (A[15] & B[15] & ~C[15]) ) Flags[2] = 1'b1; //Sets the F flag
+		else Flags[2] = 1'b0;
+		Flags[1:0] = 2'b00; Flags[3] = 1'b0; //Ensure Other Flags to 0
+		Flags[15:5] = 9'b0;
+		end
+		
+	CMP: // Flags[4]-ZF Flags[3]-CF,  Flags[2]-FF, Flags[1]-LF, Flags[0]-NF
+		begin
+		if( $signed(A) < $signed(B) ) Flags[1:0] = 2'b00; //A is less than b so number is not negative or lower than 0
+		else Flags[1:0] = 2'b11;
+		C = 16'dx;
+		if ($signed(A) == $signed(B)) Flags[4:2] = 3'b100;
+		else Flags[4:2] = 3'b000;
+		Flags[15:5] = 9'b0;
+		end
+
+	CMPU:
+		begin
+		if ( A < B ) Flags[1:0] = 2'b00; // A is Rdest, B is Rsrc
+		else Flags[1:0] = 2'b10;
+		C = 16'dx;
+		if (A == B) Flags[4:2] = 3'b100;
+		else Flags[4:2] = 3'b000;
+		Flags[15:5] = 9'b0;
+		end
+
+	
+	CMPI:
+		begin
+		if ( A < B ) Flags[1:0] = 2'b00; // A is Rdest, B is Immediate value
+		else Flags[1:0] = 2'b10;
+		C = 16'dx;
+		if (A == B) Flags[4:2] = 3'b100;
+		else Flags[4:2] = 3'b000;
+		Flags[15:5] = 9'b0;
+		end
+		
+	AND:
+		begin
+			C = A & B;
+			Flags = 16'd0;
+		end
+
+	OR:
+		begin
+			C = A | B;
+			Flags = 16'dx;
+		end
+
+	XOR:
+		begin
+		C = A ^ B;
+		Flags = 16'dx;
+		end
+
+	NOT:
+		begin
+			C = ~A; // Output is opposite of A, either 1 or 0
+		Flags = 16'dx;
+		end
+
+  LSH:
+      begin
+      if (B > 0)
+        // Perform shift on A by B
+        C  = A << B; // Fills with zeroes
+
+      else
+        // Perform shift by 1
+        C = A << 1;
+      Flags = 16'dx;
+      end
+
+  LSHI:
+    begin
+    if (B > 0)
+      // Perform shift on A by B
+      C = A << B; // Fills with zeroes
+
+    else
+      // Perform shift by 1
+      C = A << 1;
+    Flags = 16'dx;
+    end
+
+  ARSH:
+    begin
+    if (B > 0)
+      // Perform shift on A by B
+      C = A >>> B; // Sign extended
+
+    else
+      // Perform shift by 1
+      C = A >>> 1; // Sign extended
+    Flags = 16'dx;
+    end
+
+  ALSH:
+    begin
+    if (B > 0)
+      // Perform shift on A by B
+      C = A << B; // Sign extended
+
+    else
+      // Perform shift by 1
+      C =A << 1; // Sign extended
+	Flags = 16'dx;
+    end
+
+  RSH:
+    begin
+    if (B > 0)
+      // Perform shift on A by B
+      C = A >> B; // Sign extended
+
+    else
+      // Perform shift by 1
+      C = A >> 1; // logical extended
+	Flags = 16'dx;
+    end
+  
+  RSHI:
+    begin
+    if (B > 0)
+      // Perform shift on A by B
+      C = A >>> B; // Sign extended
+
+    else
+      // Perform shift by 1
+      C = A >>> 1; // Sign extended
+	Flags = 16'dx;
+    end
+
+  NOP:
+    begin
+   	//do nothing
+		C = 16'dx;
+		Flags = 16'dx;
+
+    end
+	 
+	STORE:
+		begin
+		 C = 16'dx;
+		 Flags = 16'dx;		
+		end
+	
+	LOAD:
+		begin
+		 C = B;
+		 Flags = 16'dx;
+		end
+	
+	CTLST:
+		begin
+		 C = B;
+		 Flags = 16'dx;
+		end 
+		
+	default:
+		begin
+			C = 16'b0000;
+			Flags = 16'b00000;
+		end
+		
+	endcase
+end
+
+endmodule
