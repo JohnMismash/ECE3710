@@ -8,16 +8,12 @@ module horizontal_counter(
 );
 
 
-always@(posedge Clk)
-  begin
-    if (Horizontal_Count < 800)
-      begin
+always@(posedge Clk) begin
+    if (Horizontal_Count < 799) begin
         Horizontal_Count <= Horizontal_Count + 1;
         Vert_Counter_Enable <= 0
       end
-
-    else
-      begin
+    else begin
         Horizontal_Count <= 0;
         Vert_Counter_Enable <= 1;
       end
