@@ -20,7 +20,13 @@ output wire pixel_tick;
 output wire X;
 output wire Y;
 
-// Display is a resolution of 640 x 480. Origin of display is 0 x 0.
+// Display is a resolution of 640 x 480. Origin of display is 0 x 0 (located
+// in the top left corner), and will extend.
+
+// The pixel rate (ie. 25 MHz) determines the pixel scan rate per second.
+// In order to simplify the math, we can represent our display as a 0 x
+// 800 grid.
+
 
 localparam H_DISPLAY   = 640; // Horizontal Display Area
 localparam H_L_BORDER  =  48; // Horizontal Left Border
