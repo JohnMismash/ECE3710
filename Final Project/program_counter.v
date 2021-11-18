@@ -1,6 +1,7 @@
-module program_counter (Clock, Enable, Reset, program_no); //This program counter is currently 
+module program_counter (Clock, Enable, Reset, increase, program_no); //This program counter is currently 
 
 input wire Enable, Reset, Clock;
+input wire [7:0] increase;
 output reg [11:0] program_no;  //This is a 9bit number because we will be storing instructions in 512 words in memory. 2**9 = 512.
 
 initial begin
@@ -10,7 +11,7 @@ end
 always@(posedge Clock) begin
 
 if(Reset && Enable)
-	program_no = program_no + 1;
+	program_no = program_no + $signed(increase);
 else if (Reset && !Enable)
 	program_no = program_no;
 else
