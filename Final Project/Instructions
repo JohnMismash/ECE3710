@@ -7,7 +7,7 @@
 // 2   00 00 00 00 00 00 00
 // 1   00 00 00 00 00 00 00
 // 0   00 00 00 00 00 00 00
-//       0   1   2   3    4   5   6
+//      6  5 4  3  2  1  0
 //Initialize ‘pointer’ 
 
 
@@ -49,22 +49,37 @@ JUMP .Check_input
 //User select position. Now the token will be placed in the lowest spot of the column(R1)
 .Select **
 
-SUB R15, R15 //Initialize R15
-SUB R14, R14 //Initialize R14
-ADD R15, R1  //Get our column number and get mask
-CMPI 4, R15 //Switch Case
+	SUB R15, R15 //Initialize R15 - loop variable
+	SUB R14, R14 //Initialize R14 -place 
+	ADD R14, R1  //Get our column number and store in R14, 
+		//and get mask 
+	/* SWITCH CASE TABLE - ASSUMES MASK IS SET AND STORED IN R13
+	CMPI 4, R14 //Switch Case
 
-
-
-
+	*/
+	
+	ADD R12 R3 //Pointer of beginning of game memory put into R12
+.FOR_LOOP
+	
+	CMPI 6, R15 //Check if reach end of loop
+	JE   .EXIT LOOP
+	LOAD R4, R12 //Load first row of memory into R4
+	AND  R4, R13 //Mask
+	RSH  R4, R14 //Shift number of colum places  shift 2* (column number -1) implement this
+	CMP  0   R4  //If R4 is 0 then we can place here... Address to change is in R12
+	JE   .MODIFY MEM VALUE
+	ADDI 1, R15 //Increment Loop
+	ADDI NextRowInt, R12
+	JMP .FORLOOP
+	
 //check for the lowest position in the column selected
 	//Have a loop variable
 	//switch case statement to get correct mask
 		If column one
 		         & 11 00 00 00 00 00 00
-		Row 6_00 10 00 00 00 00 10
-			00 00 00 00 00 00 00
-		Row 5 10 000 000 
+		Row 0      10 10 00 00 00 00 10
+			   00 00 00 00 00 00 10 
+		Row 1      10 00 00 00 
 		
 	//Perform & operation and inspect
 	//When inspection row = 0 -> place token at that mem address
