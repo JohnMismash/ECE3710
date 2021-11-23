@@ -1,0 +1,97 @@
+.txt file
+
+//Initialize Mem block for Tetris board 
+// 5   00 00 00 00 00 00 00
+// 4   00 00 00 00 00 00 00
+// 3   00 00 00 00 00 00 00
+// 2   00 00 00 00 00 00 00
+// 1   00 00 00 00 00 00 00
+// 0   00 00 00 00 00 00 00
+//       0   1   2   3    4   5   6
+//Initialize ‘pointer’ 
+
+
+.Check_input
+
+CMPI 0, R0                //if R0 == 00 continue to check
+JE .Check_input
+
+CMPI 1, R0  		//if R0 == 01 , move right
+JE . Move_right
+
+CMPI 2, R0 		//if R0 == 10 , move left
+JE .Move_left
+
+CMPI 3, R0 		//If R0 == 11 , selected
+JE .Select
+
+JMP .Check_input     //Repeat the Loop
+
+//Moves the cursor one position to the right. R1 is where the current column is kept
+.Move_right 
+
+ADDI 1, R1
+CMP  7, R1  //If R1 == 7, set it equal to 0 
+JE .Start_over
+JUMP .Check_input
+
+
+//Moves the cursor one position to the left. R1 is where the current column is kept
+.Move_left
+
+SUBI 1, R1
+CMP  -1, R1  //If R1 == -1, set it equal to 6 
+JE .Wrap_around 
+JUMP .Check_input
+
+
+
+//User select position. Now the token will be placed in the lowest spot of the column(R1)
+.Select **
+
+SUB R15, R15 //Initialize R15
+SUB R14, R14 //Initialize R14
+ADD R15, R1  //Get our column number and get mask
+CMPI 4, R15 //Switch Case
+
+
+
+
+//check for the lowest position in the column selected
+	//Have a loop variable
+	//switch case statement to get correct mask
+		If column one
+		         & 11 00 00 00 00 00 00
+		Row 6_00 10 00 00 00 00 10
+			00 00 00 00 00 00 00
+		Row 5 10 000 000 
+		
+	//Perform & operation and inspect
+	//When inspection row = 0 -> place token at that mem address
+	
+	//if so, jump to next line -1 from memory address return that address
+//set piece by player (R2)
+JUMP .Check_win
+
+
+.Start_over     			//Sets column to 0
+LOAD R1, 0
+JUMP .Check_input
+
+
+.Wrap_around 		// Sets column to 6
+LOAD R1, 6
+JUMP .Check_input
+
+.Check_win **	//Check horizontally, vertically, and diagonally for 4 in a row of one ‘color’
+...
+JE .Game_over
+JUMP .Switch_player
+
+
+.Switch_player **		//change color
+... //Change player (if R2== A set R2=B)
+JUMP .Start_over
+
+.Game_over ** 	 //Ended with winner or tie 
+...                                                                                                     
