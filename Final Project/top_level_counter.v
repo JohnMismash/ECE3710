@@ -40,19 +40,26 @@ vertical_counter V (Clk, Vert_Counter_Enable, V_Count);
 assign Hsync = (H_Count < H_RETRACE) ? 1'b1:1'b0;
 assign Vsync = (V_Count < V_RETRACE) ? 1'b1:1'b0;
 
-assign Red   = (H_Count < (H_MAX - H_R_BORDER) &&
-                H_Count > (H_L_BORDER + H_RETRACE - 1) &&
-                V_Count < (V_MAX - V_B_BORDER) &&
-                V_Count > (V_B_BORDER + V_RETRACE)) ? 4'hF:4'h0;
+always@(H_Count, V_Count) begin
 
-assign Green = (H_Count < (H_MAX - H_R_BORDER) &&
-                H_Count > (H_L_BORDER + H_RETRACE - 1) &&
-                V_Count < (V_MAX - V_B_BORDER) &&
-                V_Count > (V_B_BORDER + V_RETRACE)) ? 4'hF:4'h0;
+  if ((H_Count % 92) >= 0 || (H_Count % 92) < 4 &&
+      (V_Count % 70) >= 0 || (V_Count % 70) < 4 &&
+       H_Count < (H_MAX - H_R_BORDER) &&
+       H_Count > (H_L_BORDER + H_RETRACE - 1) &&
+       V_Count < (V_MAX - V_B_BORDER) &&
+       V_Count > (V_B_BORDER + V_RETRACE)) begin
 
-assign Green = (H_Count < (H_MAX - H_R_BORDER) &&
-                H_Count > (H_L_BORDER + H_RETRACE - 1) &&
-                V_Count < (V_MAX - V_B_BORDER) &&
-                V_Count > (V_B_BORDER + V_RETRACE)) ? 4'hF:4'h0;
+    Red   = 4'h0;
+    Green = 4'h0;
+    Blue = 4'h0;
+  end
+
+  else begin
+    Red   = 4'h0;
+    Green = 4'h0;
+    Blue = 4'b1;
+  end
+
+end
 
 endmodule
