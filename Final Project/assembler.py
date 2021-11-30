@@ -3,20 +3,22 @@
 
 import sys
 
-
 def main(args):
     assembly_file = args[0]
     with open(assembly_file) as fp:
         lines = fp.readlines()
 
+        labels = create_labels(lines)
+
         converted = []
         ln = 1
         for line in lines:
             try:
-                assembled = assemble(line)
-                converted.append(assembled + '\n')
-                print(assembled)
-                ln += 1
+                assembled = assemble(line, labels, ln)
+                if assembled != 'x':
+                    converted.append(assembled + '\n')
+                    #print(assembled)
+                    ln += 1
 
             except:
                 print('Error found on line: ' + str(ln))
@@ -24,22 +26,48 @@ def main(args):
                 print(line)
                 return 1
 
+    if len(labels) > 0:
+        NotImplemented
+
     with open('output.txt', 'w') as fp:
         fp.writelines(converted)
 
 
-def assemble(line):
-    split = line.split()
+def create_labels(lines):
+    labels = dict()
+
+    i = 0
+    for line in lines:
+        i += 1
+        op = line.upper().split()[0]
+        if op[0] == '.':
+            i -= 1
+            labels[op] = i + 1
+
+
+
+    return labels
+
+
+def assemble(line, labels, i):
+    split = line.upper().split()
 
     if len(split) > 3:
         raise ValueError
 
     op = split[0]
+    if op[0] == '.':
+        return 'x'
 
     if len(split) == 1: # NOP instruction
-        if op != 'NOP':
-            raise ValueError
-        return '0001011100000000'
+
+        if op == 'NOP':
+            return '0001011100000000'
+
+        elif op == 'CTLST':
+            return '1000000000000000'
+
+        raise ValueError
 
     elif len(split) == 2: # NOT and jump instructions
         if op != 'NOT' and op[0] != 'J':
@@ -52,13 +80,21 @@ def assemble(line):
 
         else:
             op = switch_op(op)
-           
+            bin_val = split[1] 
             neg = False
             if split[1][0] == '-':
                 neg = True
-                split[1] = split[1][1:] # Remove negative sign
+                bin_val = split[1][1:] # Remove negative sign
 
-            bin_val = format(int(split[1]), 'b')
+            elif split[1][0] == '.': # This is a jump to a label
+                bin_val = labels[split[1]] - i
+                if bin_val < 0:
+                    bin_val -= 1
+                if str(bin_val)[0] == '-':
+                    neg = True
+                    bin_val = str(bin_val)[1:] # Remove negative sign
+
+            bin_val = format(int(bin_val), 'b')
             bin_val = bin_val.zfill(8)
 
             if neg == True:
@@ -68,12 +104,6 @@ def assemble(line):
 
                 bin_val = bin(int(bin_val, 2) + int('1', 2))
                 bin_val = bin_val[2:]
-                #bin_val = bin((1 * int(bin_val)) % 2**8)
-                #bin_val = bin((-1 * int(bin_val))+(1<<8))
-
-                #bin_val = bin_val.replace('0b', '')
-
-                #bin_val = '1' * (8 - len(bin_val)) + bin_val
             
             return_str = op + bin_val
 
@@ -213,6 +243,9 @@ def switch_op(op):
 
     elif op == 'STOR' or op == 'STORE':
         return '11011010'
+
+    elif op == 'CTLST':
+        return '10000000'
 
     else:
         raise ValueError
