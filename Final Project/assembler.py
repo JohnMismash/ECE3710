@@ -14,6 +14,13 @@ def main(args):
         ln = 1
         for line in lines:
             try:
+                i = line.index('//')
+                line = line[0:i]
+
+            except:
+                0 # Do nothing if no comment is found
+
+            try:
                 assembled = assemble(line, labels, ln)
                 if assembled != 'x':
                     converted.append(assembled + '\n')
