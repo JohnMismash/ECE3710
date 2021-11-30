@@ -130,6 +130,20 @@ class TestAssemblerMethods(unittest.TestCase):
 
         self.assertEqual(expected, assemble(s1, None, None))
 
+    def test_cmpi_neg1(self):
+        s1 = 'CMPI -1, R5'
+
+        expected = '00001011' + '0101' + '1111'
+
+        self.assertEqual(expected, assemble(s1, None, None))
+
+    def test_jmp_0(self):
+        s1 = 'JMP 0'
+
+        expected = '01000000' + '00000000'
+
+        self.assertEqual(expected, assemble(s1, None, None))
+
     def test_basic_jl_neg_even(self):
         s1 = "JL -6" 
     
