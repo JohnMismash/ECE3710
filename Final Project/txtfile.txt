@@ -1,0 +1,87 @@
+//Initialize Mem block for Tetris board 
+// 5   00 00 00 00 00 00 00
+// 4   00 00 00 00 00 00 00
+// 3   00 00 00 00 00 00 00
+// 2   00 00 00 00 00 00 00
+// 1   00 00 00 00 00 00 00
+// 0   00 00 00 00 00 00 00
+//       0   1   2   3    4   5   6
+//Initialize ‘pointer’ 
+
+.START
+	XOR R2, R2   //Initialize Game Variables
+	ADDI 1,  R2    //Start with player 1
+	//Set memory pointer R3 to address of game block
+
+.Check_input
+
+	CTLST   //Get the state of the controller
+
+	CMPI 0, R0                //if R0 == 00 continue to check
+	JE .Check_input
+
+	CMPI 1, R0  		//if R0 == 01 , move right
+	JE .Move_right
+
+	CMPI 2, R0 		//if R0 == 10 , move left
+	JE .Move_left
+
+	CMPI 3, R0 		//If R0 == 11 , selected
+	JE .Select
+
+	JMP .Check_input     //Repeat the Loop
+
+//Moves the cursor one position to the right. R1 is where the current column is kept
+.Move_right 
+
+	ADDI 1, R1
+	CMPI  7, R1  //If R1 == 7, set it equal to 0 
+	JE .Start_over
+	JUMP .Check_input
+
+
+//Moves the cursor one position to the left. R1 is where the current column is kept
+.Move_left
+
+	SUBI 1, R1
+	CMPI  -1, R1  //If R1 == -1, set it equal to 6 
+	JE .Wrap_around 
+	JUMP .Check_input
+
+//User select position. Now the token will be placed in the lowest spot of the column(R1)
+.Select **
+
+XOR R15, R15 	//Initialize R15 Loop Var
+XOR R14, R14 	//Initialize R14 Displacement
+ADD R1, R14  	//Get our column number/displacement
+ADD R3, R14 	//Points to lowest row position in column in memory (i, j)
+
+
+.Start_over     			//Sets column to 0
+	XOR R1, R1
+	JUMP .Check_input
+
+.Wrap_around 		// Sets column to 6
+	XOR R1, R1
+	ADDI 6, R1
+	JUMP .Check_input
+
+.Check_win **	//Check horizontally, vertically, and diagonally for 4 in a row of one ‘color’
+...
+	JE .Game_over
+	JUMP .Switch_player
+
+
+.Switch_player **		//change color
+	CMPI   1, R2		//Check If we are player 1 or player 2
+	JE        1		//Skip over the next instruction
+	XOR   R2, R2		//R2 = 0 in case that R2 == player 2 so that adding 1 gets us to 1
+	ADDI 1,  R2		//If we are player 1, increments to 2, or if at 2 goes to 0 then to 1
+	JUMP .Check_input
+
+.Game_over ** 	 //Ended with winner or tie 
+	CTLST //wait for enter button to start new game
+	CMPI    3, R0
+	JE        .START
+	JUMP  .Game_over        
+

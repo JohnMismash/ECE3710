@@ -3,20 +3,34 @@
 
 import sys
 
-
 def main(args):
     assembly_file = args[0]
     with open(assembly_file) as fp:
         lines = fp.readlines()
 
+        labels = create_labels(lines)
+
         converted = []
         ln = 1
         for line in lines:
+            line = line.strip()
             try:
-                assembled = assemble(line)
-                converted.append(assembled + '\n')
-                print(assembled)
-                ln += 1
+                i = line.index('//')
+                if i == 0:
+                    continue
+                line = line[0:i]
+
+            except:
+                0 # Do nothing if no comment is found
+
+            try:
+                if len(line) < 2:
+                    continue
+                assembled = assemble(line, labels, ln)
+                if assembled != 'x':
+                    #converted.append(assembled + '\t' + line + '\n')
+                    converted.append(assembled + '\n')
+                    ln += 1
 
             except:
                 print('Error found on line: ' + str(ln))
@@ -24,22 +38,48 @@ def main(args):
                 print(line)
                 return 1
 
+    if len(labels) > 0:
+        NotImplemented
+
     with open('output.txt', 'w') as fp:
         fp.writelines(converted)
 
 
-def assemble(line):
-    split = line.split()
+def create_labels(lines):
+    labels = dict()
+    i = 0
+    for line in lines:
+        line = line.strip()
+        if len(line) == 0 or line[0] == '/':
+            continue 
+        i += 1
+        op = line.upper().split()[0]
+        if op[0] == '.':
+            i -= 1
+            labels[op] = i + 1
+
+    return labels
+
+
+def assemble(line, labels, i):
+    split = line.upper().split()
 
     if len(split) > 3:
         raise ValueError
 
     op = split[0]
+    if op[0] == '.':
+        return 'x'
 
     if len(split) == 1: # NOP instruction
-        if op != 'NOP':
-            raise ValueError
-        return '0001011100000000'
+
+        if op == 'NOP':
+            return '0001011100000000'
+
+        elif op == 'CTLST':
+            return '1000000000000000'
+
+        raise ValueError
 
     elif len(split) == 2: # NOT and jump instructions
         if op != 'NOT' and op[0] != 'J':
@@ -52,13 +92,24 @@ def assemble(line):
 
         else:
             op = switch_op(op)
-           
+            bin_val = split[1] 
             neg = False
             if split[1][0] == '-':
                 neg = True
-                split[1] = split[1][1:] # Remove negative sign
+                bin_val = split[1][1:] # Remove negative sign
 
-            bin_val = format(int(split[1]), 'b')
+            elif split[1][0] == '.': # This is a jump to a label
+                if split[1] not in labels:
+                    raise ValueError
+
+                bin_val = labels[split[1]] - i
+                bin_val -= 1
+
+                if str(bin_val)[0] == '-':
+                    neg = True
+                    bin_val = str(bin_val)[1:] # Remove negative sign
+
+            bin_val = format(int(bin_val), 'b')
             bin_val = bin_val.zfill(8)
 
             if neg == True:
@@ -68,12 +119,6 @@ def assemble(line):
 
                 bin_val = bin(int(bin_val, 2) + int('1', 2))
                 bin_val = bin_val[2:]
-                #bin_val = bin((1 * int(bin_val)) % 2**8)
-                #bin_val = bin((-1 * int(bin_val))+(1<<8))
-
-                #bin_val = bin_val.replace('0b', '')
-
-                #bin_val = '1' * (8 - len(bin_val)) + bin_val
             
             return_str = op + bin_val
 
@@ -85,11 +130,26 @@ def assemble(line):
             imm = True
 
         if imm == True: # Case for immediate operations
+            neg = False
             Rsrc = split[1][:-1]
             Rdst = split[2]
 
-            imm_val = format(int(Rsrc), 'b')
-            imm_val = imm_val.zfill(4)
+            if Rsrc[0] == '-':
+                neg = True
+                Rsrc = split[1][1:-1] # Remove negative sign
+
+            if neg == False:
+                imm_val = format(int(Rsrc), 'b')
+                imm_val = imm_val.zfill(4)
+
+            elif neg == True:
+                imm_val = Rsrc.zfill(4)
+                imm_val = imm_val.replace('0', '2')
+                imm_val = imm_val.replace('1', '0')
+                imm_val = imm_val.replace('2', '1')
+
+                imm_val = bin(int(imm_val, 2) + int('1', 2))
+                imm_val = imm_val[2:]
 
             op = switch_op(op)
             A = switch_reg(Rdst)
@@ -213,6 +273,9 @@ def switch_op(op):
 
     elif op == 'STOR' or op == 'STORE':
         return '11011010'
+
+    elif op == 'CTLST':
+        return '10000000'
 
     else:
         raise ValueError

@@ -1,0 +1,152 @@
+.txt file
+
+//Initialize Mem block for Tetris board 
+// 5   00 00 00 00 00 00 00
+// 4   00 00 00 00 00 00 00
+// 3   00 00 00 00 00 00 00
+// 2   00 00 00 00 00 00 00
+// 1   00 00 00 00 00 00 00
+// 0   00 00 00 00 00 00 00
+//      6  5 4  3  2  1  0
+//Initialize ‘pointer’ 
+
+
+.Check_input
+
+CMPI 0, R0                //if R0 == 00 continue to check
+JE .Check_input
+
+CMPI 1, R0  		//if R0 == 01 , move right
+JE . Move_right
+
+CMPI 2, R0 		//if R0 == 10 , move left
+JE .Move_left
+
+CMPI 3, R0 		//If R0 == 11 , selected
+JE .Select
+
+JMP .Check_input     //Repeat the Loop
+
+//Moves the cursor one position to the right. R1 is where the current column is kept
+.Move_right 
+
+ADDI 1, R1
+CMP  7, R1  //If R1 == 7, set it equal to 0 
+JE .Start_over
+JUMP .Check_input
+
+
+//Moves the cursor one position to the left. R1 is where the current column is kept
+.Move_left
+
+SUBI 1, R1
+CMP  -1, R1  //If R1 == -1, set it equal to 6 
+JE .Wrap_around 
+JUMP .Check_input
+
+
+
+//User select position. Now the token will be placed in the lowest spot of the column(R1)
+.Select **
+
+	SUB R15, R15 //Initialize R15 - loop variable
+	SUB R14, R14 //Initialize R14 -place 
+	ADD R14, R1  //Get our column number and store in R14, 
+		//and get mask 
+	/* SWITCH CASE TABLE - ASSUMES MASK IS SET AND STORED IN R13
+	CMPI 4, R14 //Switch Case
+
+	*/
+	
+	ADD R12 R3 //Pointer of beginning of game memory put into R12
+.FOR_LOOP
+	
+	CMPI 6, R15 //Check if reach end of loop
+	JE   .EXIT LOOP
+	LOAD R4, R12 //Load first row of memory into R4
+	AND  R4, R13 //Mask
+	RSH  R4, R14 //Shift number of colum places  shift 2* (column number -1) implement this
+	CMP  0   R4  //If R4 is 0 then we can place here... Address to change is in R12
+	JE   .MODIFY MEM VALUE
+	ADDI 1, R15 //Increment Loop
+	ADDI NextRowInt, R12
+	JMP .FORLOOP
+	
+//check for the lowest position in the column selected
+	//Have a loop variable
+	//switch case statement to get correct mask
+		If column one
+		         & 11 00 00 00 00 00 00
+		Row 0      10 10 00 00 00 00 10
+			   00 00 00 00 00 00 10 
+		Row 1      10 00 00 00 
+		
+	//Perform & operation and inspect
+	//When inspection row = 0 -> place token at that mem address
+	
+	//if so, jump to next line -1 from memory address return that address
+//set piece by player (R2)
+JUMP .Check_win
+
+
+.Start_over     			//Sets column to 0
+LOAD R1, 0
+JUMP .Check_input
+
+
+.Wrap_around 		// Sets column to 6
+LOAD R1, 6
+JUMP .Check_input
+
+.Check_win **	//Check horizontally, vertically, and diagonally for 4 in a row of one ‘color’
+.Horizontal_right//check horizontal to the right
+XOR R5, R5    // Clear Win Count
+XOR R10, R10  //Clear out R10
+ADD R14, R10  //MOV R14 to R10
+ADDI 1, R10   //Get value to the right 
+//Check 
+CMP R2, R10   //Compare value of current token, to the value to the right
+JE .Horizontal_right_again
+
+.Horizontal_left //Check horizontal to the left
+XOR R10, R10  //Clear out R10
+ADD R14, R10  //MOV R14 to R10
+SUBI 1, R10   //Get value to the left 
+//check bounds
+CMP R2, R10   //Compare value of current token, to the value to the right
+JE .Horizontal_left_again
+
+.Horizontal_right_again
+ADD 1, R5     // ADD 1 to win count
+CMPI 4, R5    // Check if 4 in a row
+JE .Game_over
+ADDI 1, R10   //Get value to the right
+//check bounds
+CMP R2, R10   //Compare value of current token, to the value to the right
+JE .Horizontal_right_again
+JUMP .Horizontal_left
+
+.Horizontal_left_again
+ADD 1, R5     // ADD 1 to win count
+CMPI 4, R5    // Check if 4 in a row
+JE .Game_over
+SUBI 1, R10   //Get value to the right of 
+//check bounds
+CMP R2, R10   //Compare value of current token, to the value to the right
+JE .Horizontal_left_again
+
+.Vertical
+
+ADDI 1, R10
+CMP R14, R10
+
+JE .Game_over
+JUMP .Switch_player
+
+
+.Switch_player **		//change color
+... //Change player (if R2== A set R2=B)
+JUMP .Start_over
+
+.Game_over ** 	 //Ended with winner or tie 
+...                                                                                                     

@@ -1,0 +1,7 @@
+.start
+jmp 10
+jmp .start
+jmp .end
+jmp 10
+.end
+jmp .start
