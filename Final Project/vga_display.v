@@ -1,4 +1,4 @@
-module vga_display(Clk, Reset, Hsync, Vsync, video_on, pixel_tick, X, Y)
+module vga_display(Clk, Reset, Hsync, Vsync, video_on, pixel_tick, X, Y);
 
 // Each pixel on the screen has a red, green, and blue component, and each
 // color signal is analog.

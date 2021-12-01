@@ -8,10 +8,10 @@ module tb_top_level_counter;
 		.Clk(clock),
 		.Reset(reset),
 		.Hsync(hsync),
-    .Vsync(vsync),
-    .Red(red),
-    .Green(green).
-    .Blue(blue)
+		.Vsync(vsync),
+		.Red(red),
+		.Green(green),
+		.Blue(blue)
 		);
 
 	initial begin
@@ -21,7 +21,7 @@ module tb_top_level_counter;
 		reset = 0;
 		clock = 0;
 
-		#15
+		#15;
 		// reset = 1;
 		// #10
 		// reset=0;
