@@ -89,14 +89,14 @@ JUMP .Check_win
 XOR R6, R6   //Clear column Variable
 ADD R1, R6   // Load Column into R6
 XOR R5, R5    // Clear Win Count
-XOR R7, R7  //Clear register
 XOR R10, R10  //Clear out R10
 ADD R14, R10  //MOV R14 to R10
 ADDI 1, R10   //Get address to the right 
 ADDI 1, R6 //add to column number
-CMPI 6, R6 //Check if out of bounds
+CMPI 7, R6 //Check if out of bounds
 JE .Horizontal_left  //Jump if out of bounds
-CMP R2, R10   //Compare value of current token, to the value to the right
+LOAD R7, R10 // get value stored in R10
+CMP R2, R7   //Compare value of current token, to the value to the right
 JE .Horizontal_right_again
 
 .Horizontal_left //Check horizontal to the left
@@ -106,9 +106,10 @@ XOR R10, R10  //Clear out R10
 ADD R14, R10  //MOV R14 to R10
 SUBI 1, R10   //Get value to the left 
 SUBI 1, R6   //Move column left
-CMPI 0, R6   //check bounds
+CMPI -1, R6   //check bounds
 JE .Vertical
-CMP R2, R10   //Compare value of current token, to the value to the right
+LOAD R7, R10 // get value stored in R10
+CMP R2, R7   //Compare value of current token, to the value to the right
 JE .Horizontal_left_again
 
 .Horizontal_right_again
@@ -117,9 +118,10 @@ CMPI 4, R5    // Check if 4 in a row
 JE .Game_over
 ADDI 1, R10   //Get value to the right
 ADDI 1, R6 //add to column number
-CMPI 6, R6 //Check if out of bounds
+CMPI 7, R6 //Check if out of bounds
 JE .Horizontal_left  //Jump if out of bounds
-CMP R2, R10   //Compare value of current token, to the value to the right
+LOAD R7, R10 // get value stored in R10
+CMP R2, R7   //Compare value of current token, to the value to the right
 JE .Horizontal_right_again
 JUMP .Horizontal_left
 
@@ -129,12 +131,41 @@ CMPI 4, R5    // Check if 4 in a row
 JE .Game_over
 SUBI 1, R10   //Get value to the right of 
 SUBI 1, R6   //Move column left
-CMPI 0, R6   //check bounds
+CMPI -1, R6   //check bounds
 JE .Vertical
-CMP R2, R10   //Compare value of current token, to the value to the right
+LOAD R7, R10 // get value stored in R10
+CMP R2, R7   //Compare value of current token, to the value to the right
 JE .Horizontal_left_again
 
 .Vertical
+.Vertical_down
+XOR R6, R6   //Clear column Variable
+ADD R1, R6   // Load Column into R6
+XOR R5, R5    // Clear Win Count
+XOR R10, R10  //Clear out R10
+ADD R14, R10  //MOV R14 to R10
+SUBI 7, R10   //Get address below
+SUBI 1, R6 //sub to row number ////
+CMPI -1, R6 //Check if out of bounds
+JE .Diagonal //Jump if out of bounds
+LOAD R7, R10 // get value stored in R10
+CMP R2, R7   //Compare value of current token, to the value below
+JE .Vertical_down_again 
+
+
+.Vertical_down_again
+ADD 1, R5     // ADD 1 to win count
+CMPI 4, R5    // Check if 4 in a row
+JE .Game_over
+SUBI 7, R10   //Get value below
+SUBI 1, R6 //row number
+CMPI -1, R6 //Check if out of bounds
+JE .Diagonal //Jump if out of bounds
+LOAD R7, R10 // get value stored in R10
+CMP R2, R7   //Compare value of current token, to the value to the right
+JE .Vertical_down_again
+
+.Diagonal
 
 ADDI 1, R10
 CMP R14, R10
