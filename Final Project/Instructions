@@ -1,14 +1,10 @@
-.txt file
-
-//Initialize Mem block for Tetris board 
 // 5   00 00 00 00 00 00 00
 // 4   00 00 00 00 00 00 00
 // 3   00 00 00 00 00 00 00
 // 2   00 00 00 00 00 00 00
 // 1   00 00 00 00 00 00 00
 // 0   00 00 00 00 00 00 00
-//       0   1   2   3    4   5   6
-//Initialize ‘pointer’ 
+//     0  1  2  3  4  5  6
 
 .START
 	XOR R2, R2   //Initialize Game Variables
@@ -85,6 +81,7 @@ JUMP .Check_win
 	JUMP .Check_input
 
 .Check_win **	//Check horizontally, vertically, and diagonally for 4 in a row of one ‘color’
+
 .Horizontal_right//check horizontal to the right
 XOR R6, R6   //Clear column Variable
 ADD R1, R6   // Load Column into R6
@@ -167,6 +164,7 @@ JE .Vertical_down_again
 
 
 .Diagonal
+
 .Diagonal_up_left
 XOR R6, R6   //Clear column Variable
 XOR R8, R8   //Clear row Variable
