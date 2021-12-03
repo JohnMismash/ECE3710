@@ -109,12 +109,12 @@ SUBI 1, R6   //Move column left
 CMPI -1, R6   //check bounds
 JE .Vertical
 LOAD R7, R10 // get value stored in R10
-CMP R2, R7   //Compare value of current token, to the value to the right
+CMP R2, R7   //Compare value of current token,
 JE .Horizontal_left_again
 
 .Horizontal_right_again
 ADD 1, R5     // ADD 1 to win count
-CMPI 4, R5    // Check if 4 in a row
+CMPI 3, R5    // Check if 4 in a row
 JE .Game_over
 ADDI 1, R10   //Get value to the right
 ADDI 1, R6 //add to column number
@@ -127,51 +127,181 @@ JUMP .Horizontal_left
 
 .Horizontal_left_again
 ADD 1, R5     // ADD 1 to win count
-CMPI 4, R5    // Check if 4 in a row
+CMPI 3, R5    // Check if 4 in a row
 JE .Game_over
 SUBI 1, R10   //Get value to the right of 
 SUBI 1, R6   //Move column left
 CMPI -1, R6   //check bounds
 JE .Vertical
 LOAD R7, R10 // get value stored in R10
-CMP R2, R7   //Compare value of current token, to the value to the right
+CMP R2, R7   //Compare value of current token
 JE .Horizontal_left_again
 
 .Vertical
 .Vertical_down
-XOR R6, R6   //Clear column Variable
-ADD R1, R6   // Load Column into R6
+XOR R8, R8   //Clear row Variable
+ADD R1, R8   // Load row into R6
 XOR R5, R5    // Clear Win Count
 XOR R10, R10  //Clear out R10
 ADD R14, R10  //MOV R14 to R10
 SUBI 7, R10   //Get address below
-SUBI 1, R6 //sub to row number ////
-CMPI -1, R6 //Check if out of bounds
+SUBI 1, R8 //sub to row number ////
+CMPI -1, R8 //Check if out of bounds
 JE .Diagonal //Jump if out of bounds
 LOAD R7, R10 // get value stored in R10
 CMP R2, R7   //Compare value of current token, to the value below
 JE .Vertical_down_again 
 
-
 .Vertical_down_again
 ADD 1, R5     // ADD 1 to win count
-CMPI 4, R5    // Check if 4 in a row
+CMPI 3, R5    // Check if 4 in a row
 JE .Game_over
 SUBI 7, R10   //Get value below
-SUBI 1, R6 //row number
-CMPI -1, R6 //Check if out of bounds
+SUBI 1, R8 //row number
+CMPI -1, R8 //Check if out of bounds
 JE .Diagonal //Jump if out of bounds
 LOAD R7, R10 // get value stored in R10
-CMP R2, R7   //Compare value of current token, to the value to the right
+CMP R2, R7   //Compare value of current token
 JE .Vertical_down_again
 
+
+
 .Diagonal
+.Diagonal_up_left
+XOR R6, R6   //Clear column Variable
+XOR R8, R8   //Clear row Variable
+ADD R1, R6   // Load Column into R6
+XOR R5, R5    // Clear Win Count
+XOR R10, R10  //Clear out R10
+ADD R14, R10  //MOV R14 to R10
+ADDI 6, R10   //Get address diagonal up left
+SUBI 1, R6 //sub to column number 
+ADDI 1, R8  //ADD row number
+CMPI 6, R8 //Check if out of bounds
+JE .Diagonal_down_right //Jump if out of bounds
+CMPI -1, R6 //Check if out of bounds
+JE .Diagonal_down_right //Jump if out of bounds
+LOAD R7, R10 // get value stored in R10
+CMP R2, R7   //Compare value of current token
+JE .Diagonal_up_left_again
+JUMP .Diagonal_down_right
 
-ADDI 1, R10
-CMP R14, R10
-
+.Diagonal_up_left_again
+ADD 1, R5     // ADD 1 to win count
+CMPI 3, R5    // Check if 4 in a row
 JE .Game_over
+ADDI 6, R10   //Get value below
+SUBI 1, R6 // sub to column number 
+ADDI 1, R8  //ADD row number
+CMPI 6, R8 //Check if out of bounds
+JE .Diagonal_down_right //Jump if out of bounds
+CMPI -1, R6 //Check if out of bounds
+JE .Diagonal_down_right //Jump if out of bounds
+LOAD R7, R10 // get value stored in R10
+CMP R2, R7   //Compare value of current token
+JE .Diagonal_up_left_again
+
+.Diagonal_down_right
+XOR R6, R6   //Clear column Variable
+XOR R8, R8   //Clear row Variable
+ADD R1, R6   // Load Column into R6
+XOR R10, R10  //Clear out R10
+ADD R14, R10  //MOV R14 to R10
+SUBI 6, R10   //Get address diagonal up left
+ADDI 1, R6 //add to column number 
+SUBI 1, R8  //sub row number
+CMPI -1, R8 //Check if out of bounds
+JE .Diagonal_up_right //Jump if out of bounds
+CMPI 7, R6 //Check if out of bounds
+JE .Diagonal_up_right //Jump if out of bounds
+LOAD R7, R10 // get value stored in R10
+CMP R2, R7   //Compare value of current token
+JE .Diagonal_down_right_again
+JUMP .Diagonal_up_right
+
+.Diagonal_down_right_again
+ADD 1, R5     // ADD 1 to win count
+CMPI 3, R5    // Check if 4 in a row
+JE .Game_over
+SUBI 6, R10   //Get value below to the right
+ADDI 1, R6 //add to column number 
+SUBI 1, R8  //sub row number
+CMPI -1, R8 //Check if out of bounds
+JE .Diagonal_up_right //Jump if out of bounds
+CMPI 7, R6 //Check if out of bounds
+JE .Diagonal_up_right //Jump if out of bound
+LOAD R7, R10 // get value stored in R10
+CMP R2, R7   //Compare value of current token
+JE .Diagonal_down_right_again
+
+.Diagonal_up_right
+XOR R6, R6   //Clear column Variable
+XOR R8, R8   //Clear row Variable
+ADD R1, R6   // Load Column into R6
+XOR R5, R5    // Clear Win Count
+XOR R10, R10  //Clear out R10
+ADD R14, R10  //MOV R14 to R10
+ADDI 8, R10   //Get address diagonal up right
+ADDI 1, R6 //ADD to column number 
+ADDI 1, R8  //ADD row number
+CMPI 6, R8 //Check if out of bounds
+JE .Diagonal_down_left //Jump if out of bounds
+CMPI 7, R6 //Check if out of bounds
+JE .Diagonal_down_left //Jump if out of bounds
+LOAD R7, R10 // get value stored in R10
+CMP R2, R7   //Compare value of current token
+JE .Diagonal_up_right_again
+JUMP .Diagonal_down_left
+
+.Diagonal_up_right_again
+ADD 1, R5     // ADD 1 to win count
+CMPI 3, R5    // Check if 4 in a row
+JE .Game_over
+ADDI 6, R10   //Get value below
+ADDI 1, R6 // ADD to column number 
+ADDI 1, R8  //ADD row number
+CMPI 6, R8 //Check if out of bounds
+JE .Diagonal_down_left //Jump if out of bounds
+CMPI 7, R6 //Check if out of bounds
+JE .Diagonal_down_left //Jump if out of bounds
+LOAD R7, R10 // get value stored in R10
+CMP R2, R7   //Compare value of current token
+JE .Diagonal_up_right_again
+
+.Diagonal_down_left
+XOR R6, R6   //Clear column Variable
+XOR R8, R8   //Clear row Variable
+ADD R1, R6   // Load Column into R6
+XOR R10, R10  //Clear out R10
+ADD R14, R10  //MOV R14 to R10
+SUBI 8, R10   //Get address diagonal down left
+SUBI 1, R6 //sub to column number 
+SUBI 1, R8  //sub row number
+CMPI -1, R8 //Check if out of bounds
+JE .Switch_player //Jump if out of bounds
+CMPI -1, R6 //Check if out of bounds
+JE .Switch_player //Jump if out of bounds
+LOAD R7, R10 // get value stored in R10
+CMP R2, R7   //Compare value of current token
+JE .Diagonal_down_left_again
 JUMP .Switch_player
+
+.Diagonal_down_left_again
+ADD 1, R5     // ADD 1 to win count
+CMPI 3, R5    // Check if 4 in a row
+JE .Game_over
+SUBI 8, R10   //Get value below the left
+SUBI 1, R6 //add to column number 
+SUBI 1, R8  //sub row number
+CMPI -1, R8 //Check if out of bounds
+JE .Switch_player //Jump if out of bounds
+CMPI -1, R6 //Check if out of bounds
+JE .Switch_player //Jump if out of bounds
+LOAD R7, R10 // get value stored in R10
+CMP R2, R7   //Compare value of current token
+JE .Diagonal_down_left_again
+JUMP .Switch_player
+
 
 
 
