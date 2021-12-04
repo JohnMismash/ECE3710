@@ -8,10 +8,11 @@ module FSMwithVGA(
 wire [1:0] state;
 wire [11:0] vga_lookup;
 wire [15:0] game_board;
+wire [15:0] column_no, player;
 
 StateConversion State(left, right, center, state);
-FSM_Final FSM(.Clock(clk), .Reset(rst), .controller_state(state), .vga_lookup(vga_lookup), .vga_out(game_board));
-top_level_counter counter(clk, rst, state, hysnc, vsync, vga_blank, vga_clk, game_board, RGB, vga_lookup);
+FSM_Final FSM(.Clock(clk), .Reset(rst), .controller_state(state), .vga_lookup(vga_lookup), .vga_out(game_board), .r1(column_no), .r2(player));
+top_level_counter counter(clk, rst, state, hysnc, vsync, vga_blank, vga_clk, game_board, column_no, player, RGB, vga_lookup);
 
 endmodule
 

@@ -1,6 +1,6 @@
 module top_level_counter (
-	input	clk, rst, state, 
-	input [15:0] game_board,
+	input	clk, rst,
+	input [15:0] game_board, column_no, player,
 	output hsync, vsync,
 	output reg vga_blank_n, vga_clk,
 	output [23:0] RGB,
@@ -28,7 +28,7 @@ parameter V_TOTAL       = 10'd525; // total width -- 2 + 33 + 480 + 10 = 525
 assign hsync = ~((hcount >= H_BACK_PORCH) & (hcount < H_BACK_PORCH + H_SYNC));
 assign vsync = ~((vcount >= V_DISPLAY_INT + V_FRONT_PORCH) & (vcount < V_DISPLAY_INT + V_FRONT_PORCH + V_SYNC));
 
-bitgen bits(vga_blank_n, hcount, vcount, RGB);
+bitgen bits(vga_blank_n, hcount, vcount, game_board, column_no, player, RGB, vga_lookup);
 
 
 always @(posedge clk) begin

@@ -1,7 +1,9 @@
 module bitgen (
 	input bright, 
-	input [9:0] hcount, vcount, 
-	output [23:0] rgb
+	input [9:0] hcount, vcount,
+	input [15:0] game_board, column_no, player,
+	output [23:0] rgb,
+	output reg [11:0] vga_lookup
 );
 
 assign rgb = {b,g,r};

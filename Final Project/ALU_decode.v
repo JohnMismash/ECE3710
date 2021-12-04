@@ -4,7 +4,8 @@ module register_mod(instruction, reset, Clocks, mem_data_in, controller_movement
 	wire [15:0] reg_w;
 	output wire [15:0] flagwire;
 	wire [3:0] reg_enable_decoder;
-	wire [15:0] alu_out, r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15,  B_muxed, alu_output;
+	wire [15:0] alu_out, r0, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15,  B_muxed, alu_output;
+	output wire [15:0] r1, r2;
 
 	output [15:0] outBus, outA, outB;
 	

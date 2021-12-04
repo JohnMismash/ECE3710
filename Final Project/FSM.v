@@ -1,10 +1,9 @@
-module FSM_Final(Clock, Reset, controller_state, vga_lookup, vga_out);
+module FSM_Final(Clock, Reset, controller_state, vga_lookup, vga_out, r1, r2);
 
 	input wire Clock, Reset;
 	input wire [1:0] controller_state;
 	input [11:0] vga_lookup;
-	output [15:0] vga_out;
-	// output wire [6:0] out0, out2, out3, out1;
+	output [15:0] vga_out, r1, r2;
 
 	//These are the FSM outputs
 	wire prgEnable, ls_ctrl, reg_enable, load_mux_ctrl, prgrm_incr_select;
@@ -44,7 +43,7 @@ module FSM_Final(Clock, Reset, controller_state, vga_lookup, vga_out);
 	, .we_a(mem_enable), .we_b(1'b0), .clk(Clock), .q_a(instruction_out), .q_b(vga_out)); 
   
 	register_mod ALU_decoder(.instruction(fsm_instruction), .reset(Reset), .Clocks(Clock), .mem_data_in(instruction_out), .controller_movement(controller_out_fsm),
-	.outBus(decoder_output), .outA(addr_reg), .outB(store_val_reg), .ren(reg_enable), .load_mux(load_mux_ctrl), .flagwire(flagg));
+	.outBus(decoder_output), .outA(addr_reg), .outB(store_val_reg), .ren(reg_enable), .load_mux(load_mux_ctrl), .flagwire(flagg), .r1(r1), .r2(r2));
 
 	FSM myfsm(Clock, Reset, instruction_out, flagg, controller_state, prgEnable, fsm_instruction, mem_enable, ls_contrl, reg_enable, load_mux_ctrl, prgm_incr_select, FSM_increase, control_out_fsm);
   
@@ -259,47 +258,4 @@ always@(*)begin
 		fetch_addr = addr;
 		end
 end
-endmodule 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// 
-
-module hexTo7Seg(input [3:0]x, output reg [6:0]z);
-always @*
-case(x)
-	4'b0000 :			//Hexadecimal 0
-	z = ~7'b0111111;
-   4'b0001 :			//Hexadecimal 1
-	z = ~7'b0000110;
-   4'b0010 :			//Hexadecimal 2
-	z = ~7'b1011011;
-   4'b0011 : 			//Hexadecimal 3
-	z = ~7'b1001111;
-   4'b0100 : 			//Hexadecimal 4
-	z = ~7'b1100110;
-   4'b0101 : 			//Hexadecimal 5
-	z = ~7'b1101101;
-   4'b0110 : 			//Hexadecimal 6
-	z = ~7'b1111101;
-   4'b0111 :			//Hexadecimal 7
-	z = ~7'b0000111;
-   4'b1000 : 			//Hexadecimal 8
-	z = ~7'b1111111;
-   4'b1001 : 			//Hexadecimal 9
-	z = ~7'b1100111;
-	4'b1010 : 			//Hexadecimal A
-	z = ~7'b1110111;
-	4'b1011 : 			//Hexadecimal B
-	z = ~7'b1111100;
-	4'b1100 : 			//Hexadecimal C
-	z = ~7'b1011000;
-	4'b1101 : 			//Hexadecimal D
-	z = ~7'b1011110;
-	4'b1110 : 			//Hexadecimal E
-	z = ~7'b1111001;
-	4'b1111 : 			//Hexadecimal F	
-	z = ~7'b1110001; 
-   default :
-	z = ~7'b0000000;
-endcase
 endmodule 
