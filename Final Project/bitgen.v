@@ -21,6 +21,10 @@ always @(bright, x_pos, y_pos) begin
 	// Reset RBG values.
 	{b,g,r} = 0;
 	
+	r = 8'b01100110;
+	b = 8'b0;
+	g = 8'b0;
+	
 	// Display is allowed:
 	if (bright) begin
 		if (x_pos >= 100 && x_pos < 545 && y_pos >= 100 && y_pos < 380) begin
@@ -28,26 +32,34 @@ always @(bright, x_pos, y_pos) begin
 			g = 8'b10000000;
 			b = 8'b11111111;
 		
-		end
-	
-	
-	
-//		// draw a square
-//		if (x_pos >= 200 && x_pos < 400 &&
-//			 y_pos >= 200 && y_pos < 300)
-//				r = 8'd255;
-//				
-//		else if (x_pos >= 250 && x_pos < 450 &&
-//					y_pos >= 350 && y_pos < 450)
-//				g = 8'd255;
+		// Condition for inner squares
+			// Check memory for if this square is filled and by which color
+				// two if statements, one for each color
 		
-		// background color
+		
+		// Condition for whos turn it is
+		
+		// Condition 
+	
+		end
+		
+		// Maroon Background
 		else begin
 			r = 8'b01100110;
 			b = 8'b0;
 			g = 8'b0;
 		end
 				
+	end
+	
+	else begin
+		if (x_pos >= 100 && x_pos < 545 && y_pos >= 100 && y_pos < 380) begin
+			r = 8'b0;
+			g = 8'b10000000;
+			b = 8'b11111111;
+			
+			end
+	
 	end
 	
 	// cannot display

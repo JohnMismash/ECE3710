@@ -1,8 +1,10 @@
-module FSM_Final(Clock, Reset, controller_state, out0, out1, out2, out3);
+module FSM_Final(Clock, Reset, controller_state, vga_lookup, vga_out);
 
 	input wire Clock, Reset;
 	input wire [1:0] controller_state;
-	output wire [6:0] out0, out2, out3, out1;
+	input [11:0] vga_lookup;
+	output [15:0] vga_out;
+	// output wire [6:0] out0, out2, out3, out1;
 
 	//These are the FSM outputs
 	wire prgEnable, ls_ctrl, reg_enable, load_mux_ctrl, prgrm_incr_select;
@@ -13,7 +15,7 @@ module FSM_Final(Clock, Reset, controller_state, out0, out1, out2, out3);
 	wire [7:0]  FSM_increase, increaser;
   
   //Memory Hookup
-	wire [15:0] outputB, addr_reg, store_val_reg, fsm_instruction, flagg;
+	wire [15:0] addr_reg, store_val_reg, fsm_instruction, flagg;
 	wire [11:0] store_addr;
 	wire mem_enable;
 
@@ -22,10 +24,10 @@ module FSM_Final(Clock, Reset, controller_state, out0, out1, out2, out3);
 	wire [15:0] decoder_output;
 	wire [15:0]  controller_out_fsm;
 	
-	hexTo7Seg blockdata1(program_no[3:0], out0);
-	hexTo7Seg blockdata2(program_no[7:4], out1);
-	hexTo7Seg blockdata3(program_no[11:8], out2);
-	hexTo7Seg blockdata4(instruction_out[15:12], out3);
+//	hexTo7Seg blockdata1(program_no[3:0], out0);
+//	hexTo7Seg blockdata2(program_no[7:4], out1);
+//	hexTo7Seg blockdata3(program_no[11:8], out2);
+//	hexTo7Seg blockdata4(instruction_out[15:12], out3);
 	
 	program_counter_increaser jmpr_increase(.clock(Clock), .add_select(prgm_incr_select), .displacement(FSM_increase), .out_increase(increaser));
 	program_counter PC(.Clock(Clock), .Enable(prgEnable), .Reset(Reset), .increase(increaser), .program_no(program_no));
@@ -38,8 +40,8 @@ module FSM_Final(Clock, Reset, controller_state, out0, out1, out2, out3);
 	Write enable is for Store instruction
 	instruction_out puts out the 16 bit opcode instruction or data value from memory
 	output B is a placeholder for the future*/
-	true_dual_port_ram_single_clock mem(.data_a(store_val_reg), .data_b(16'bx), .addr_a(store_addr), .addr_b(12'bx)
-	, .we_a(mem_enable), .we_b(1'b0), .clk(Clock), .q_a(instruction_out), .q_b(outputB)); 
+	true_dual_port_ram_single_clock mem(.data_a(store_val_reg), .data_b(16'bx), .addr_a(store_addr), .addr_b(vga_lookup)
+	, .we_a(mem_enable), .we_b(1'b0), .clk(Clock), .q_a(instruction_out), .q_b(vga_out)); 
   
 	register_mod ALU_decoder(.instruction(fsm_instruction), .reset(Reset), .Clocks(Clock), .mem_data_in(instruction_out), .controller_movement(controller_out_fsm),
 	.outBus(decoder_output), .outA(addr_reg), .outB(store_val_reg), .ren(reg_enable), .load_mux(load_mux_ctrl), .flagwire(flagg));
