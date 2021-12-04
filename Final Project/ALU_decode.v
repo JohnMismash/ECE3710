@@ -1,4 +1,4 @@
-module register_mod(instruction, reset, Clocks, mem_data_in, controller_movement, outBus, outA, outB, ren, load_mux, flagwire);
+module register_mod(instruction, reset, Clocks, mem_data_in, controller_movement, outBus, outA, outB, ren, load_mux, flagwire, r1, r2);
 	input [15:0] instruction, mem_data_in, controller_movement;
 	input Clocks, reset, ren, load_mux;
 	wire [15:0] reg_w;
