@@ -18,6 +18,16 @@ wire [9:0] x_pos, y_pos;
 assign x_pos = hcount - 10'd158;
 assign y_pos = vcount; 
 
+parameter BLOCK_SIZE_X = 50;
+parameter BLOCK_SIZE_Y = 50;
+parameter GAP_SIZE	= 40;
+parameter INDENT_SIZE_X = 25;
+parameter INDENT_SIZE_Y = 90;
+parameter X_DISTANCE = BLOCK_SIZE_X + GAP_SIZE; // 90
+parameter START_X = 115;
+parameter END_X = START_X + BLOCK_SIZE_X; // 165
+variable i = 0;
+
 always @(bright, x_pos, y_pos) begin
 	
 	// Reset RBG values.
@@ -29,10 +39,31 @@ always @(bright, x_pos, y_pos) begin
 	
 	// Display is allowed:
 	if (bright) begin
-		if (x_pos >= 100 && x_pos < 545 && y_pos >= 100 && y_pos < 380) begin
+		//i = i;
+		if (x_pos >= 0 && x_pos < 640 && y_pos >= 84 && y_pos < 480) begin
+		
 			r = 8'b0;
 			g = 8'b10000000;
 			b = 8'b11111111;
+			assign i = 0;
+			//(x_pos >= 25 && x_pos <= 75 && y_pos > 90 && y_pos <= 140)
+			if (x_pos >= INDENT_SIZE_X && x_pos <= BLOCK_SIZE_X + INDENT_SIZE_X && y_pos > INDENT_SIZE_Y && y_pos <= BLOCK_SIZE_Y + INDENT_SIZE_Y) begin
+				r = 8'b01100110;
+				b = 8'b0;
+				g = 8'b0;
+				i = 4'd0;
+			end
+			
+			else if (x_pos > START_X + X_DISTANCE * i && x_pos < END_X + X_DISTANCE * i && y_pos > INDENT_SIZE_Y && y_pos <= BLOCK_SIZE_Y + INDENT_SIZE_Y) begin
+				r = 8'b01100110;
+				b = 8'b0;
+				g = 8'b0;
+				assign i = i + 1;
+				//if (i > 5) begin
+				//	i <= 4'd0;
+				//end
+			end
+			
 		
 		// Condition for inner squares
 			// Check memory for if this square is filled and by which color
@@ -50,23 +81,14 @@ always @(bright, x_pos, y_pos) begin
 			r = 8'b01100110;
 			b = 8'b0;
 			g = 8'b0;
+			i = 0;
 		end
+		//i = i;
 				
-	end
-	
-	else begin
-		if (x_pos >= 100 && x_pos < 545 && y_pos >= 100 && y_pos < 380) begin
-			r = 8'b0;
-			g = 8'b10000000;
-			b = 8'b11111111;
-			
-			end
-	
 	end
 	
 	// cannot display
 	// defaulted above to {r,g,b} = 0;
-
 end
 
 endmodule
