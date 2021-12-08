@@ -1,13 +1,19 @@
 module top_level_counter (
-	input	clk, rst,
-	input [15:0] game_board, column_no, player,
-	output hsync, vsync,
+	input	clk, rst, left, right, center,
+	output hsync, 
+	output vsync,
 	output reg vga_blank_n, vga_clk,
-	output [23:0] RGB,
-	output [11:0] vga_lookup
+	output [23:0] RGB
 );
 
 reg [9:0] hcount, vcount;
+wire[1:0] state;
+wire [15:0] game_board;
+wire [15:0] column_no, player;
+wire [11:0] vga_lookup;
+
+StateConversion State(left, right, center, state);
+FSM_Final FSM(.Clock(clk), .Reset(rst), .controller_state(state), .vga_lookup(vga_lookup), .vga_out(game_board), .r1(column_no), .r2(player));
 
 
 // parameters for a VGA 640 x 480 (60Hz) display
@@ -24,6 +30,8 @@ parameter V_BACK_PORCH  = 10'd33;  // 33 lines
 parameter V_DISPLAY_INT = 10'd480; // 480 lines
 parameter V_FRONT_PORCH = 10'd10;  // 10 lines
 parameter V_TOTAL       = 10'd525; // total width -- 2 + 33 + 480 + 10 = 525
+
+
 
 assign hsync = ~((hcount >= H_BACK_PORCH) & (hcount < H_BACK_PORCH + H_SYNC));
 assign vsync = ~((vcount >= V_DISPLAY_INT + V_FRONT_PORCH) & (vcount < V_DISPLAY_INT + V_FRONT_PORCH + V_SYNC));
@@ -71,4 +79,30 @@ end
 
 endmodule
 
+////////////////////////////////////////////////////////////////////////////////////////
+//FSM CODE
+///////////////////////////////////////////////////////////////////////////////////////
 
+module StateConversion(
+	input left, right, center,
+	output reg [1:0] state
+);
+
+always@(*) begin
+	if (left) begin
+		state = 2'b10;	
+	end
+	else if (right) begin
+		state = 2'b01;
+	end
+	
+	else if (center) begin
+		state = 2'b11;
+	end
+	
+	else begin
+		state = 2'b00;
+	end
+end
+
+endmodule
