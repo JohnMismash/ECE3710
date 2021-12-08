@@ -26,7 +26,7 @@ parameter INDENT_SIZE_Y = 90;
 parameter X_DISTANCE = BLOCK_SIZE_X + GAP_SIZE; // 90
 parameter START_X = 115;
 parameter END_X = START_X + BLOCK_SIZE_X; // 165
-variable i = 0;
+integer i;
 
 always @(bright, x_pos, y_pos) begin
 	
@@ -45,7 +45,6 @@ always @(bright, x_pos, y_pos) begin
 			r = 8'b0;
 			g = 8'b10000000;
 			b = 8'b11111111;
-			assign i = 0;
 			//(x_pos >= 25 && x_pos <= 75 && y_pos > 90 && y_pos <= 140)
 			if (x_pos >= INDENT_SIZE_X && x_pos <= BLOCK_SIZE_X + INDENT_SIZE_X && y_pos > INDENT_SIZE_Y && y_pos <= BLOCK_SIZE_Y + INDENT_SIZE_Y) begin
 				r = 8'b01100110;
@@ -54,14 +53,14 @@ always @(bright, x_pos, y_pos) begin
 				i = 4'd0;
 			end
 			
-			else if (x_pos > START_X + X_DISTANCE * i && x_pos < END_X + X_DISTANCE * i && y_pos > INDENT_SIZE_Y && y_pos <= BLOCK_SIZE_Y + INDENT_SIZE_Y) begin
-				r = 8'b01100110;
-				b = 8'b0;
-				g = 8'b0;
-				assign i = i + 1;
-				//if (i > 5) begin
-				//	i <= 4'd0;
-				//end
+			else begin
+				for (i = 0; i <= 5; i = i + 1) begin
+					if (x_pos > START_X + X_DISTANCE * i && x_pos < END_X + X_DISTANCE * i && y_pos > INDENT_SIZE_Y && y_pos <= BLOCK_SIZE_Y + INDENT_SIZE_Y) begin
+						r = 8'b01100110;
+						b = 8'b0;
+						g = 8'b0;
+					end
+				end
 			end
 			
 		
@@ -81,7 +80,6 @@ always @(bright, x_pos, y_pos) begin
 			r = 8'b01100110;
 			b = 8'b0;
 			g = 8'b0;
-			i = 0;
 		end
 		//i = i;
 				
