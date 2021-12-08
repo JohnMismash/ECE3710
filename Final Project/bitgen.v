@@ -9,11 +9,6 @@ module bitgen (
 assign rgb = {b,g,r};
 reg [7:0] r, g, b;
 
-// x_start = H_BACK_PORCH + H_SYNC + H_FRONT_PORCH = 48 + 95 + 15 = 158
-// x_end   = H_TOTAL - H_BACK_PORCH = 793 - 48 = 745
-// y_start = 0
-// y_end   = V_DISPLAY_INT = 480
-
 wire [9:0] x_pos, y_pos;
 assign x_pos = hcount - 10'd158;
 assign y_pos = vcount; 
