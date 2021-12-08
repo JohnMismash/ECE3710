@@ -16,13 +16,13 @@
 
 .Check_input
 
-	CTLST   0, R0           //Get the state of the controller
+	CTLST          //Get the state of the controller
 
 	CMPI 0, R0                //if R0 == 00 continue to check
 	JE .Check_input
 
 	CMPI 1, R0  		//if R0 == 01 , move right
-	JE . Move_right
+	JE .Move_right
 
 	CMPI 2, R0 		//if R0 == 10 , move left
 	JE .Move_left
@@ -50,7 +50,7 @@
 	JUMP .Check_input
 
 //User select position. Now the token will be placed in the lowest spot of the column(R1)
-.Select **
+.Select
 
 	XOR R15, R15 	//Initialize R15 Loop Var
 	XOR R14, R14 	//Initialize R14 Displacement
@@ -86,7 +86,7 @@
 	ADDI 6, R1
 	JUMP .Check_input
 
-.Check_win **	//Check horizontally, vertically, and diagonally for 4 in a row of one ‘color’
+.Check_win	//Check horizontally, vertically, and diagonally for 4 in a row of one ‘color’
 
 .Horizontal_right//check horizontal to the right
 	XOR R6, R6   //Clear column Variable
@@ -117,7 +117,7 @@
 	JUMP .Vertical
 	
 .Horizontal_right_again
-	ADD 1, R5     // ADD 1 to win count
+	ADDI 1, R5     // ADD 1 to win count
 	CMPI 3, R5    // Check if 4 in a row
 	JE .Game_over
 	ADDI 1, R10   //Get value to the right
@@ -130,7 +130,7 @@
 	JUMP .Horizontal_left
 
 .Horizontal_left_again
-	ADD 1, R5     // ADD 1 to win count
+	ADDI 1, R5     // ADD 1 to win count
 	CMPI 3, R5    // Check if 4 in a row
 	JE .Game_over
 	SUBI 1, R10   //Get value to the right of 
@@ -158,7 +158,7 @@
 	JMP .Diagonal
 
 .Vertical_down_again
-	ADD 1, R5     // ADD 1 to win count
+	ADDI 1, R5     // ADD 1 to win count
 	CMPI 3, R5    // Check if 4 in a row
 	JE .Game_over
 	SUBI 7, R10   //Get value below
@@ -192,7 +192,7 @@
 	JUMP .Diagonal_down_right
 
 .Diagonal_up_left_again
-	ADD 1, R5     // ADD 1 to win count
+	ADDI 1, R5     // ADD 1 to win count
 	CMPI 3, R5    // Check if 4 in a row
 	JE .Game_over
 	ADDI 6, R10   //Get value below
@@ -226,7 +226,7 @@
 	JUMP .Diagonal_up_right
 
 .Diagonal_down_right_again
-	ADD 1, R5     // ADD 1 to win count
+	ADDI 1, R5     // ADD 1 to win count
 	CMPI 3, R5    // Check if 4 in a row
 	JE .Game_over
 	SUBI 6, R10   //Get value below to the right
@@ -261,7 +261,7 @@
 	JUMP .Diagonal_down_left
 
 .Diagonal_up_right_again
-	ADD 1, R5     // ADD 1 to win count
+	ADDI 1, R5     // ADD 1 to win count
 	CMPI 3, R5    // Check if 4 in a row
 	JE .Game_over
 	ADDI 6, R10   //Get value below
@@ -295,7 +295,7 @@
 	JUMP .Switch_player
 
 .Diagonal_down_left_again
-	ADD 1, R5     // ADD 1 to win count
+	ADDI 1, R5     // ADD 1 to win count
 	CMPI 3, R5    // Check if 4 in a row
 	JE .Game_over
 	SUBI 8, R10   //Get value below the left
@@ -310,15 +310,15 @@
 	JE .Diagonal_down_left_again
 	JUMP .Switch_player
 
-.Switch_player **		//change color
+.Switch_player		//change color
 	CMPI   1, R2		//Check If we are player 1 or player 2
 	JE        1		//Skip over the next instruction
 	XOR   R2, R2		//R2 = 0 in case that R2 == player 2 so that adding 1 gets us to 1
 	ADDI 1,  R2		//If we are player 1, increments to 2, or if at 2 goes to 0 then to 1
 	JUMP .Check_input
 
-.Game_over ** 	 //Ended with winner or tie 
-	CTLST 0, R0      //wait for enter button to start new game
+.Game_over 	 //Ended with winner or tie 
+	CTLST      //wait for enter button to start new game
 	CMPI    3, R0
 	JE        .START
 	JUMP  .Game_over                                                                                                 

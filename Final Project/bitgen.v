@@ -39,6 +39,9 @@ parameter END_X = START_X + BLOCK_SIZE_X; // 165
 integer i;
 integer j;
 
+integer counter;
+initial begin counter = 2083; end
+
 always @(bright, x_pos, y_pos) begin
 	
 	// Reset RBG values.
@@ -66,13 +69,24 @@ always @(bright, x_pos, y_pos) begin
 							
 							// Check memory if piece must be placed.
 							
+							counter = counter + 1;
+							
+							vga_lookup = counter;
+							
 							if (game_board[1:0] == 2'b01) begin
 								// Player 1
+								r = 8'b11111111;
+								b = 8'b0;
+								g = 8'b0;
+								
 								
 							end
 							
 							else if (game_board[1:0] == 2'b10) begin
 								// Player 2
+								r = 8'b11111111;
+								b = 8'b0;
+								g = 8'b11111111;
 							
 							end
 							
@@ -89,13 +103,44 @@ always @(bright, x_pos, y_pos) begin
 					
 					if (x_pos > START_X + X_DISTANCE * i && x_pos < END_X + X_DISTANCE * i && y_pos > INDENT_SIZE_Y + Y_DISTANCE * j && y_pos <= BLOCK_SIZE_Y + INDENT_SIZE_Y + Y_DISTANCE * j && i > 0) begin
 						
+						// Check memory if piece must be placed.
 						
+						counter = counter + 1;
 						
-						r = 8'b01100110;
-						b = 8'b0;
-						g = 8'b0;
+						vga_lookup = counter;
+						
+						if (game_board[1:0] == 2'b01) begin
+							// Player 1
+							r = 8'b11111111;
+							b = 8'b0;
+							g = 8'b0;
+							
+							
+						end
+						
+						else if (game_board[1:0] == 2'b10) begin
+							// Player 2
+							r = 8'b11111111;
+							b = 8'b0;
+							g = 8'b11111111;
+						
+						end
+						
+						else begin
+							// No piece is being placed here, so we must draw it as a blank position.
+							r = 8'b01100110;
+							b = 8'b0;
+							g = 8'b0;
+						end
 					end
 				end
+				
+				counter = counter - 13;
+				
+				if (counter <= 2048) begin
+					counter = 2083;
+				end
+				
 			end
 		
 			// Maroon Background
