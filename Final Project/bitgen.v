@@ -43,7 +43,10 @@ integer i;
 integer j;
 integer k;
 initial S = 0;
+<<<<<<< HEAD
 initial k = 0;
+=======
+>>>>>>> 1db10f650e2929cf0862e4caee5a7ffc2f831554
 initial vsync_controller = 0;
 
 
@@ -55,7 +58,11 @@ reg [41:0] enable_bits;
 genvar v;
 generate 
 	for (v = 0; v < 42; v = v+1) begin:Registers
+<<<<<<< HEAD
 		Register_VGA r(.in(in_data[v]), .enable(enable_bits[v]), .out(game_data[v]));
+=======
+		Register_VGA r(.in(2), .enable(enable_bits[v]), .out(game_data[v]));
+>>>>>>> 1db10f650e2929cf0862e4caee5a7ffc2f831554
 	end
 
 endgenerate
@@ -101,14 +108,22 @@ end
 										
 										// Check memory if piece must be placed.
 										
+<<<<<<< HEAD
 										if (game_data[(j * 7) + i] > 16'd0) begin
+=======
+										if (game_data[(j * 7) + i] > 0) begin
+>>>>>>> 1db10f650e2929cf0862e4caee5a7ffc2f831554
 											// Player 1
 											r = 8'b11111111;
 											b = 8'b0;
 											g = 8'b0;							
 										end
 										
+<<<<<<< HEAD
 										else if (game_data[(j * 7) + i] > 16'd0) begin
+=======
+										else if (game_data[(j * 7) + i] > 0) begin
+>>>>>>> 1db10f650e2929cf0862e4caee5a7ffc2f831554
 											// Player 2
 											r = 8'b11111111;
 											b = 8'b0;
@@ -131,7 +146,11 @@ end
 									
 									// Check memory if piece must be placed
 									
+<<<<<<< HEAD
 									if (game_data[(j * 7) + i] > 16'd0) begin
+=======
+									if (game_data[(j * 7) + i] > 0) begin
+>>>>>>> 1db10f650e2929cf0862e4caee5a7ffc2f831554
 										// Player 1
 										r = 8'b11111111;
 										b = 8'b0;
@@ -140,7 +159,11 @@ end
 										
 									end
 									
+<<<<<<< HEAD
 									else if (game_data[(j * 7) + i] > 16'd0) begin
+=======
+									else if (game_data[(j * 7) + i] > 0) begin
+>>>>>>> 1db10f650e2929cf0862e4caee5a7ffc2f831554
 										// Player 2
 										r = 8'b11111111;
 										b = 8'b0;
@@ -182,6 +205,7 @@ end
 			
 			
 		S1:begin
+<<<<<<< HEAD
 			enable_bits[k] = 1;
 			in_data[k] = game_board;
 			vga_lookup = 2048 + k;
@@ -190,6 +214,16 @@ end
 			if(k == 42)begin  vsync_controller = 1; k = 0; end						
 			else begin k = k + 1; end
 			
+=======
+			for(k = 0; k < 42; k = k+1)begin
+				enable_bits[k] = 1;
+				in_data[k] = game_board;
+				vga_lookup = 2048 + k;
+				enable_bits[k] = 0;
+			end
+			vsync_controller = 1;
+		
+>>>>>>> 1db10f650e2929cf0862e4caee5a7ffc2f831554
 		end
 		endcase
 	end
