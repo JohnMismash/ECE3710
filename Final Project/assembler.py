@@ -28,8 +28,8 @@ def main(args):
                     continue
                 assembled = assemble(line, labels, ln)
                 if assembled != 'x':
-                    #converted.append(assembled + '\t' + line + '\n')
-                    converted.append(assembled + '\n')
+                    converted.append(assembled + '\t' + line + '\n')
+                    #converted.append(assembled + '\n')
                     ln += 1
 
             except:

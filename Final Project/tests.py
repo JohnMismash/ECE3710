@@ -144,6 +144,9 @@ class TestAssemblerMethods(unittest.TestCase):
 
         self.assertEqual(expected, assemble(s1, None, None))
 
+    def test_jmp_label(self):
+
+
     def test_basic_jl_neg_even(self):
         s1 = "JL -6" 
     

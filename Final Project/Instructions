@@ -157,6 +157,12 @@
 	JE .Vertical_down_again
 	JMP .Diagonal
 
+.start_ladder_2
+	JUMP .Start
+
+.check_input_ladder_2
+	JUMP .Check_Input
+
 .Vertical_down_again
 	ADDI 1, R5     // ADD 1 to win count
 	CMPI 3, R5    // Check if 4 in a row
@@ -225,6 +231,12 @@
 	JE .Diagonal_down_right_again
 	JUMP .Diagonal_up_right
 
+.start_ladder_3
+	JUMP .start_ladder_2
+
+.check_input_ladder_3
+	JUMP .check_input_ladder_2
+
 .Diagonal_down_right_again
 	ADDI 1, R5     // ADD 1 to win count
 	CMPI 3, R5    // Check if 4 in a row
@@ -239,6 +251,8 @@
 	LOAD R7, R10 // get value stored in R10
 	CMP R2, R7   //Compare value of current token
 	JE .Diagonal_down_right_again
+
+.
 
 .Diagonal_up_right
 	XOR R6, R6   //Clear column Variable
@@ -315,10 +329,10 @@
 	JE        1		//Skip over the next instruction
 	XOR   R2, R2		//R2 = 0 in case that R2 == player 2 so that adding 1 gets us to 1
 	ADDI 1,  R2		//If we are player 1, increments to 2, or if at 2 goes to 0 then to 1
-	JUMP .Check_input
+	JUMP .check_input_ladder_3
 
 .Game_over 	 //Ended with winner or tie 
 	CTLST      //wait for enter button to start new game
 	CMPI    3, R0
-	JE        .START
-	JUMP  .Game_over                                                                                                 
+	JE        .start_ladder_3
+	JUMP  .Game_over
