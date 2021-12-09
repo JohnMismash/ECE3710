@@ -22,19 +22,19 @@ parameter BLOCK_SIZE_X = 50;
 parameter BLOCK_SIZE_Y = 50;
 
 // Gap inbetween each block, for each gap on the x-axis and y-axis.
-parameter GAP_SIZE_X	= 30;
+parameter GAP_SIZE_X	= 36;
 parameter GAP_SIZE_Y = 10;
 
 // Indents at the top underneath the border and on each side of the screen.
-parameter INDENT_SIZE_X = 40;
+parameter INDENT_SIZE_X = 36;
 parameter INDENT_SIZE_Y = 110;
 
 // Accounts for the difference between each starting drawing point.
-parameter X_DISTANCE = BLOCK_SIZE_X + GAP_SIZE_X; // 90
+parameter X_DISTANCE = BLOCK_SIZE_X + GAP_SIZE_X; // 86
 parameter Y_DISTANCE = BLOCK_SIZE_Y + GAP_SIZE_Y; // 90
 
 // Accounts for the starting block point.
-parameter START_X = 50;
+parameter START_X = 40;
 parameter START_Y = 90;
 parameter END_X = START_X + BLOCK_SIZE_X; // 165
 parameter S0=4'd0, S1=4'd1, S2=4'd2, S3=4'd3, S4=4'd4;
@@ -43,13 +43,8 @@ integer i;
 integer j;
 integer k;
 initial S = 0;
-<<<<<<< HEAD
 initial k = 0;
-=======
->>>>>>> 1db10f650e2929cf0862e4caee5a7ffc2f831554
 initial vsync_controller = 0;
-
-
 //how to update registers
 //need to look at registers for draw color
 reg [15:0] in_data [41:0];
@@ -58,20 +53,13 @@ reg [41:0] enable_bits;
 genvar v;
 generate 
 	for (v = 0; v < 42; v = v+1) begin:Registers
-<<<<<<< HEAD
 		Register_VGA r(.in(in_data[v]), .enable(enable_bits[v]), .out(game_data[v]));
-=======
-		Register_VGA r(.in(2), .enable(enable_bits[v]), .out(game_data[v]));
->>>>>>> 1db10f650e2929cf0862e4caee5a7ffc2f831554
 	end
 
 endgenerate
-
-
  always @ (bright, x_pos, y_pos) begin
 			  S = states;
 end
-
 
 	// Present State becomes Next State
 	always@(S)begin
@@ -86,44 +74,34 @@ end
 				// Reset RBG values.
 				{b,g,r} = 0;
 				
-				r = 8'b01100110;
-				b = 8'b0;
-				g = 8'b0;
+				r = 8'd255;
+				b = 8'd255;
+				g = 8'd255;
 				
 				// Display is allowed:
 				if (bright) begin
-					r = 8'b0;
-					g = 8'b10000000;
-					b = 8'b11111111;
+					r = 8'd153;
+					g = 8'd204;
+					b = 8'd255;
 				
 					// For each position within the game board, draw the respective square, with its respective color based on
 					// if a piece is being placed or not and by which player.
 					for (j = 5; j >= 0; j = j - 1) begin
-						
 						if (x_pos >= 0 && x_pos < 640 && y_pos >= 84 && y_pos < 480) begin
-						
 							for (i = 0; i <= 6; i = i + 1) begin
 								if (i == 0) begin
 									if (x_pos >= INDENT_SIZE_X && x_pos <= BLOCK_SIZE_X + INDENT_SIZE_X && y_pos > INDENT_SIZE_Y + Y_DISTANCE * (5 - j) && y_pos <= BLOCK_SIZE_Y + INDENT_SIZE_Y + Y_DISTANCE * (5 - j)) begin
 										
 										// Check memory if piece must be placed.
 										
-<<<<<<< HEAD
-										if (game_data[(j * 7) + i] > 16'd0) begin
-=======
 										if (game_data[(j * 7) + i] > 0) begin
->>>>>>> 1db10f650e2929cf0862e4caee5a7ffc2f831554
 											// Player 1
 											r = 8'b11111111;
 											b = 8'b0;
 											g = 8'b0;							
 										end
 										
-<<<<<<< HEAD
-										else if (game_data[(j * 7) + i] > 16'd0) begin
-=======
 										else if (game_data[(j * 7) + i] > 0) begin
->>>>>>> 1db10f650e2929cf0862e4caee5a7ffc2f831554
 											// Player 2
 											r = 8'b11111111;
 											b = 8'b0;
@@ -133,9 +111,9 @@ end
 										
 										else begin
 											// No piece is being placed here, so we must draw it as a blank position.
-											r = 8'b01100110;
-											b = 8'b0;
-											g = 8'b0;
+											r = 8'd96;
+											b = 8'd96;
+											g = 8'd96;
 										end
 
 									end
@@ -143,14 +121,9 @@ end
 								end
 								
 								if (x_pos > START_X + X_DISTANCE * i && x_pos < END_X + X_DISTANCE * i && y_pos > INDENT_SIZE_Y + Y_DISTANCE * (5 - j) && y_pos <= BLOCK_SIZE_Y + INDENT_SIZE_Y + Y_DISTANCE * (5 - j) && i > 0) begin
-									
 									// Check memory if piece must be placed
 									
-<<<<<<< HEAD
-									if (game_data[(j * 7) + i] > 16'd0) begin
-=======
 									if (game_data[(j * 7) + i] > 0) begin
->>>>>>> 1db10f650e2929cf0862e4caee5a7ffc2f831554
 										// Player 1
 										r = 8'b11111111;
 										b = 8'b0;
@@ -159,11 +132,7 @@ end
 										
 									end
 									
-<<<<<<< HEAD
-									else if (game_data[(j * 7) + i] > 16'd0) begin
-=======
 									else if (game_data[(j * 7) + i] > 0) begin
->>>>>>> 1db10f650e2929cf0862e4caee5a7ffc2f831554
 										// Player 2
 										r = 8'b11111111;
 										b = 8'b0;
@@ -173,31 +142,52 @@ end
 									
 									else begin
 										// No piece is being placed here, so we must draw it as a blank position.
-										r = 8'b01100110;
-										b = 8'b0;
-										g = 8'b0;
+										 r = 8'd96;
+										 g = 8'd96;
+										 b = 8'd96;
 									end
 								end
 							end
 							
 						end
 					
-						// Maroon Background
+            // Top section (grey background and marker)
 						else begin
-							if (x_pos >= INDENT_SIZE_X + (GAP_SIZE_X + BLOCK_SIZE_X) * column_no && x_pos < 45 && y_pos >= 0 && y_pos < 84) begin // Draw dropdown square
-								r = 8'b0;
-								b = 8'b0;
-								g = 8'b11111111;
+							if (x_pos >= START_X + X_DISTANCE * column_no && x_pos < END_X + X_DISTANCE * column_no && y_pos >= 16 && y_pos <= 66) begin // Draw dropdown square
+								 if (player[1:0] == 2'b01) begin
+									r = 8'd255;
+											  b = 8'b0;
+											  g = 8'b0;
+								 end
+								 
+								 else if (player[1:0] == 2'b10) begin
+									r = 8'd255;
+											  b = 8'b0;
+											  g = 8'd255;
+								 end
+								 
+								 else begin
+									r = 8'd0;
+											  b = 8'd0;
+											  g = 8'd0;
+								 end
+											
 							end
 							
 							else begin
-								r = 8'b01100110;
-								b = 8'b0;
-								g = 8'b0;
+                
+								// No piece is being placed here, so we must draw it as a blank position.
+								r = 8'd96;
+								b = 8'd96;
+								g = 8'd96;
 							end
-						end		
+
+						end
+					
 					end
+		
 				end
+      
 	
 	// Cannot display, so it will default above to {r,g,b} = 0;
 				vsync_controller = 0;
@@ -205,25 +195,11 @@ end
 			
 			
 		S1:begin
-<<<<<<< HEAD
 			enable_bits[k] = 1;
 			in_data[k] = game_board;
 			vga_lookup = 2048 + k;
-			enable_bits[k] = 0;
-			
-			if(k == 42)begin  vsync_controller = 1; k = 0; end						
+			if (k == 42) begin  vsync_controller = 1; k = 0; end
 			else begin k = k + 1; end
-			
-=======
-			for(k = 0; k < 42; k = k+1)begin
-				enable_bits[k] = 1;
-				in_data[k] = game_board;
-				vga_lookup = 2048 + k;
-				enable_bits[k] = 0;
-			end
-			vsync_controller = 1;
-		
->>>>>>> 1db10f650e2929cf0862e4caee5a7ffc2f831554
 		end
 		endcase
 	end
