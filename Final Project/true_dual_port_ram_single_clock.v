@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 module true_dual_port_ram_single_clock
-#(parameter DATA_WIDTH=16, parameter ADDR_WIDTH=12,parameter file = "C:/Users/jackm/github/ECE3710/Final Project/initialize.txt")
+#(parameter DATA_WIDTH=16, parameter ADDR_WIDTH=12,parameter file = "C:/Users/vness/OneDrive/Documents/GitHub/ECE3710/Final Project/initialize.txt")
 (
 	input [(DATA_WIDTH-1):0] data_a, data_b,
 	input [(ADDR_WIDTH-1):0] addr_a, addr_b,

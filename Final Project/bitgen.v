@@ -20,19 +20,19 @@ parameter BLOCK_SIZE_X = 50;
 parameter BLOCK_SIZE_Y = 50;
 
 // Gap inbetween each block, for each gap on the x-axis and y-axis.
-parameter GAP_SIZE_X	= 30;
+parameter GAP_SIZE_X	= 36;
 parameter GAP_SIZE_Y = 10;
 
 // Indents at the top underneath the border and on each side of the screen.
-parameter INDENT_SIZE_X = 40;
+parameter INDENT_SIZE_X = 36;
 parameter INDENT_SIZE_Y = 110;
 
 // Accounts for the difference between each starting drawing point.
-parameter X_DISTANCE = BLOCK_SIZE_X + GAP_SIZE_X; // 90
+parameter X_DISTANCE = BLOCK_SIZE_X + GAP_SIZE_X; // 86
 parameter Y_DISTANCE = BLOCK_SIZE_Y + GAP_SIZE_Y; // 90
 
 // Accounts for the starting block point.
-parameter START_X = 50;
+parameter START_X = 40;
 parameter START_Y = 90;
 parameter END_X = START_X + BLOCK_SIZE_X; // 165
 
@@ -72,16 +72,17 @@ always @(bright, x_pos, y_pos) begin
 	// Reset RBG values.
 	{b,g,r} = 0;
 	
-	r = 8'b01100110;
-	b = 8'b0;
-	g = 8'b0;
+	r = 8'd255;
+	b = 8'd255;
+	g = 8'd255;
 	
 	// Display is allowed:
 	if (bright) begin
 	
-		r = 8'b0;
-		g = 8'b10000000;
-		b = 8'b11111111;
+		// Light blue
+		r = 8'd153;
+		g = 8'd204;
+		b = 8'd255;
 	
 		// For each position within the game board, draw the respective square, with its respective color based on
 		// if a piece is being placed or not and by which player.
@@ -94,14 +95,14 @@ always @(bright, x_pos, y_pos) begin
 							
 							// Check memory if piece must be placed.
 							
-							if (game_board[15:14] == 2'b01) begin
+							if (game_board[1:0] == 2'b01) begin
 								// Player 1
 								r = 8'b11111111;
 								b = 8'b0;
 								g = 8'b0;							
 							end
 							
-							else if (game_board[15:14] == 2'b10) begin
+							else if (game_board[1:0] == 2'b10) begin
 								// Player 2
 								r = 8'b11111111;
 								b = 8'b0;
@@ -111,9 +112,9 @@ always @(bright, x_pos, y_pos) begin
 							
 							else begin
 								// No piece is being placed here, so we must draw it as a blank position.
-								r = 8'b01100110;
-								b = 8'b0;
-								g = 8'b0;
+								r = 8'd255;
+								b = 8'd255;
+								g = 8'd255;
 							end
 
 						end
@@ -124,7 +125,7 @@ always @(bright, x_pos, y_pos) begin
 						
 						// Check memory if piece must be placed
 						
-						if (game_board[15:14] == 2'b01) begin
+						if (game_board[1:0] == 2'b01) begin
 							// Player 1
 							r = 8'b11111111;
 							b = 8'b0;
@@ -133,7 +134,7 @@ always @(bright, x_pos, y_pos) begin
 							
 						end
 						
-						else if (game_board[15:14] == 2'b10) begin
+						else if (game_board[1:0] == 2'b10) begin
 							// Player 2
 							r = 8'b11111111;
 							b = 8'b0;
@@ -143,27 +144,46 @@ always @(bright, x_pos, y_pos) begin
 						
 						else begin
 							// No piece is being placed here, so we must draw it as a blank position.
-							r = 8'b01100110;
-							b = 8'b0;
-							g = 8'b0;
+							r = 8'd255;
+							b = 8'd255;
+							g = 8'd255;
 						end
 					end
 				end
 				
 			end
 		
-			// Maroon Background
+			// Top section (grey background and red marker)
 			else begin
-				if (x_pos >= INDENT_SIZE_X + (GAP_SIZE_X + BLOCK_SIZE_X) * column_no && x_pos < 45 && y_pos >= 0 && y_pos < 84) begin // Draw dropdown square
-					r = 8'b0;
-					b = 8'b0;
-					g = 8'b11111111;
+				if (x_pos >= START_X + X_DISTANCE * column_no && x_pos < END_X + X_DISTANCE * column_no && y_pos >= 16 && y_pos <= 66) begin // Draw dropdown square
+					r = 8'd255;
+					g = 8'd0;
+					b = 8'd0;
+					if (player[1:0] == 2'b01) begin
+						// Player 1
+						r = 8'b11111111;
+						b = 8'b0;
+						g = 8'b0;							
+					end
+							
+					else if (player[1:0] == 2'b10) begin
+						// Player 2
+						r = 8'b11111111;
+						b = 8'b0;
+						g = 8'b11111111;
+					end
+					
+					else begin
+						r = 8'b0;
+						b = 8'd0;
+						g = 8'd0;
+					end
 				end
 				
 				else begin
-					r = 8'b01100110;
-					b = 8'b0;
-					g = 8'b0;
+					r = 8'd96;
+					b = 8'd96;
+					g = 8'd96;
 				end
 			end		
 		end
