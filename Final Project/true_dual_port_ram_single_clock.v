@@ -40,15 +40,14 @@ module true_dual_port_ram_single_clock
 		if(addr_b == 12'bx)begin
 			q_b <= 16'bx; end
 			
-	   if (we_b) 
+		if (we_b) begin
 			if(addr_b >= 2**11) //Store data values in memory after the 2**11 block
 			begin
 				ram[addr_b] <= data_b;
 				q_b <= data_b;
 			end
-		
-		else 
-		begin
+		end
+		else begin		
 			q_b <= ram[addr_b];
 		end 
 	end
