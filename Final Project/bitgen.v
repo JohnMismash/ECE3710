@@ -63,8 +63,13 @@ end
 
 	// Present State becomes Next State
 	always@(S)begin
-			if(S == S1 && vsync_controller == 0) begin states=S1;  end
+	if (!vsync) states = S1;
+	
+	else begin
+			if(S == S1) begin states=S0;  end
+			else if(vsync_controller == 0) states = S1;
 			else states = S0;
+		end
 	end
 	
 	always@(states)begin 
@@ -111,9 +116,17 @@ end
 										
 										else begin
 											// No piece is being placed here, so we must draw it as a blank position.
-											r = 8'd96;
-											b = 8'd96;
-											g = 8'd96;
+											if (j == 0) begin
+												r = 8'd255;
+												b = 8'd0;
+												g = 8'd255;
+											end
+											
+											else begin
+												r = 8'd96;
+												b = 8'd96;
+												g = 8'd96;
+											end
 										end
 
 									end
@@ -147,6 +160,8 @@ end
 										 b = 8'd96;
 									end
 								end
+								
+								if (x_pos == 639 && y_pos == 479) begin vsync_controller = 0; end
 							end
 							
 						end
@@ -167,7 +182,7 @@ end
 								 end
 								 
 								 else begin
-									r = 8'd0;
+												r = 8'd255;
 											  b = 8'd0;
 											  g = 8'd0;
 								 end
@@ -188,9 +203,12 @@ end
 		
 				end
       
-	
-	// Cannot display, so it will default above to {r,g,b} = 0;
-				vsync_controller = 0;
+				
+				//vsync_controller = 0;
+				vga_lookup = 2048;
+				k = k;
+				in_data[k] = in_data[k];
+				
 			end
 			
 			
@@ -202,6 +220,7 @@ end
 			else begin k = k + 1; end
 		end
 		endcase
+	enable_bits = 42'b0;
 	end
 //always @(bright, x_pos, y_pos) begin
 	
