@@ -2,6 +2,7 @@ module bitgen (
 	input bright, 
 	input [9:0] hcount, vcount,
 	input [15:0] game_board, column_no, player,
+	input vsync,
 	output [23:0] rgb,
 	output reg [11:0] vga_lookup
 );
@@ -38,9 +39,33 @@ parameter END_X = START_X + BLOCK_SIZE_X; // 165
 // Variables to track which block we are currently drawing.
 integer i;
 integer j;
+integer k;
 
-integer counter;
-initial begin counter = 2083; end
+//how to update registers
+//need to look at registers for draw color
+reg [15:0] in_data [41:0];
+wire [15:0] game_data [41:0];
+reg [41:0] enable_bits;
+genvar v;
+generate 
+	for (v = 0; v < 42; v = v+1) begin:Tony
+		Register_VGA r(.in(in_data[v]), .enable(enable_bits[v]), .out(game_data[v]));
+	end
+
+endgenerate
+
+
+// TODO: Make FSM to control this!
+always @(vsync) begin
+	if (!vsync) begin
+		for(k=0; k < 42; k = k+1)begin
+			enable_bits[k] = 1;
+			vga_lookup = 2048 + k;
+			in_data[k] = game_board;
+			enable_bits[k] = 0;			
+		end	
+	end
+end
 
 always @(bright, x_pos, y_pos) begin
 	
@@ -69,20 +94,14 @@ always @(bright, x_pos, y_pos) begin
 							
 							// Check memory if piece must be placed.
 							
-							counter = counter + 1;
-							
-							vga_lookup = counter;
-							
-							if (game_board[1:0] == 2'b01) begin
+							if (game_board[15:14] == 2'b01) begin
 								// Player 1
 								r = 8'b11111111;
 								b = 8'b0;
-								g = 8'b0;
-								
-								
+								g = 8'b0;							
 							end
 							
-							else if (game_board[1:0] == 2'b10) begin
+							else if (game_board[15:14] == 2'b10) begin
 								// Player 2
 								r = 8'b11111111;
 								b = 8'b0;
@@ -103,13 +122,9 @@ always @(bright, x_pos, y_pos) begin
 					
 					if (x_pos > START_X + X_DISTANCE * i && x_pos < END_X + X_DISTANCE * i && y_pos > INDENT_SIZE_Y + Y_DISTANCE * j && y_pos <= BLOCK_SIZE_Y + INDENT_SIZE_Y + Y_DISTANCE * j && i > 0) begin
 						
-						// Check memory if piece must be placed.
+						// Check memory if piece must be placed
 						
-						counter = counter + 1;
-						
-						vga_lookup = counter;
-						
-						if (game_board[1:0] == 2'b01) begin
+						if (game_board[15:14] == 2'b01) begin
 							// Player 1
 							r = 8'b11111111;
 							b = 8'b0;
@@ -118,7 +133,7 @@ always @(bright, x_pos, y_pos) begin
 							
 						end
 						
-						else if (game_board[1:0] == 2'b10) begin
+						else if (game_board[15:14] == 2'b10) begin
 							// Player 2
 							r = 8'b11111111;
 							b = 8'b0;
@@ -135,19 +150,21 @@ always @(bright, x_pos, y_pos) begin
 					end
 				end
 				
-				counter = counter - 13;
-				
-				if (counter <= 2048) begin
-					counter = 2083;
-				end
-				
 			end
 		
 			// Maroon Background
 			else begin
-				r = 8'b01100110;
-				b = 8'b0;
-				g = 8'b0;
+				if (x_pos >= INDENT_SIZE_X + (GAP_SIZE_X + BLOCK_SIZE_X) * column_no && x_pos < 45 && y_pos >= 0 && y_pos < 84) begin // Draw dropdown square
+					r = 8'b0;
+					b = 8'b0;
+					g = 8'b11111111;
+				end
+				
+				else begin
+					r = 8'b01100110;
+					b = 8'b0;
+					g = 8'b0;
+				end
 			end		
 		end
 				
