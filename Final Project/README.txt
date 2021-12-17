@@ -7,9 +7,10 @@ details for our Connect 4 digital logic game.
 
 Our final project directory contains our source Verilog HDL code, our Python
 Assembler code, as well as testing files or testbenches needed for the project.
-Our top-level module is top_level_counter.  This module instatiates the FSM and Bit_gen modules 
-which run the logic and display of the game respectively. All other modules are created 
-under the umbrella of the FSM.
+Our top-level module is top_level_counter.  This module instantiates the FSM and
+Bit_gen modules which run the logic and display of the game respectively. All
+other modules are created under the umbrella of the FSM.
+
 It may be important to the reader to know this code is somewhat, incomplete.
 Our group was not able to finalize the overall structure and functionality of
 connecting the memory containing the game state and integrate it in sync within
