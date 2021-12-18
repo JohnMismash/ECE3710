@@ -21,4 +21,4 @@ our bit generator file for the VGA connection/output.
 
 
 ## Compilation
-In order to compile this project yourself, you must change the true\_doal\_port\_ram\_single\_clock.v module's "file" parameter to use a correct path for a memory initialization file.
+In order to compile this project yourself, you must change [this module's](https://github.com/JohnMismash/ECE3710/blob/main/Final%20Project/verilog_code/true_dual_port_ram_single_clock.v) "file" parameter to use a correct path for a memory initialization file. Other than that, the project file should work with pin layouts in the [this file](https://github.com/JohnMismash/ECE3710/blob/main/Final%20Project/verilog_code/ECE3710FinalProject.csv). This is assuming that you are using a DE1-SoC FPGA board, as well as Quartus to load the project onto the board.
