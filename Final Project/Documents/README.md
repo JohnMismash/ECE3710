@@ -1,4 +1,4 @@
-#ECE 3710 - Computer Design Lab
+# ECE 3710 - Computer Design Lab
 
 ## Authors
 John 'Jack' Mismash, Andrew Porter, Vanessa Bentley, Zach Phelan
